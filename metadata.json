@@ -1,0 +1,5 @@
+{
+  "name": "Second Slice",
+  "description": "Premium Fast Food Restaurant in Lahore - Best Pizza, Burgers, and Pasta.",
+  "requestFramePermissions": ["geolocation"]
+}
