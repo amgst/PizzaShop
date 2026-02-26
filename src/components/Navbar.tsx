@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { ShoppingBag, Menu as MenuIcon, Search, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCart } from '../context/CartContext';
@@ -8,6 +8,9 @@ export const Navbar = () => {
   const { totalItems, setIsCartOpen } = useCart();
   const { searchQuery, setSearchQuery, isSearchOpen, setIsSearchOpen } = useSearch();
   const inputRef = useRef<HTMLInputElement>(null);
+  const prevTotalRef = useRef(totalItems);
+  const [bump, setBump] = useState(false);
+  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     if (isSearchOpen && inputRef.current) {
@@ -15,12 +18,24 @@ export const Navbar = () => {
     }
   }, [isSearchOpen]);
 
+  useEffect(() => {
+    if (totalItems > prevTotalRef.current) {
+      setBump(true);
+      setShowToast(true);
+      const bumpTimer = setTimeout(() => setBump(false), 400);
+      const toastTimer = setTimeout(() => setShowToast(false), 1800);
+      prevTotalRef.current = totalItems;
+      return () => { clearTimeout(bumpTimer); clearTimeout(toastTimer); };
+    }
+    prevTotalRef.current = totalItems;
+  }, [totalItems]);
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between glass-card rounded-2xl px-6 py-3 relative overflow-hidden">
         <AnimatePresence mode="wait">
           {!isSearchOpen ? (
-            <motion.div 
+            <motion.div
               key="nav-content"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -28,7 +43,7 @@ export const Navbar = () => {
               className="flex items-center justify-between w-full"
             >
               <div className="flex items-center gap-8">
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   className="text-2xl font-display tracking-tighter text-brand-orange cursor-pointer"
@@ -36,7 +51,7 @@ export const Navbar = () => {
                 >
                   SECOND<span className="text-brand-dark">SLICE</span>
                 </motion.div>
-                
+
                 <div className="hidden md:flex items-center gap-6 text-sm font-medium">
                   <a href="#menu" className="hover:text-brand-orange transition-colors">Menu</a>
                   <a href="#about" className="hover:text-brand-orange transition-colors">About</a>
@@ -45,30 +60,51 @@ export const Navbar = () => {
               </div>
 
               <div className="flex items-center gap-4">
-                <button 
+                <button
                   onClick={() => setIsSearchOpen(true)}
                   className="p-2 hover:bg-brand-dark/5 rounded-full transition-colors"
                 >
                   <Search size={20} />
                 </button>
-                <button 
-                  onClick={() => setIsCartOpen(true)}
-                  className="p-2 hover:bg-brand-dark/5 rounded-full transition-colors relative"
-                >
-                  <ShoppingBag size={20} />
+                <div className="relative">
+                  <motion.button
+                    onClick={() => setIsCartOpen(true)}
+                    animate={bump ? { scale: [1, 1.35, 1], rotate: [0, -12, 12, 0] } : { scale: 1 }}
+                    transition={{ duration: 0.35, ease: 'easeInOut' }}
+                    className="p-2 hover:bg-brand-dark/5 rounded-full transition-colors relative"
+                  >
+                    <ShoppingBag size={20} />
+                    <AnimatePresence>
+                      {totalItems > 0 && (
+                        <motion.span
+                          key={totalItems}
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          exit={{ scale: 0 }}
+                          transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+                          className="absolute top-1 right-1 w-4 h-4 bg-brand-orange text-white text-[10px] font-bold flex items-center justify-center rounded-full"
+                        >
+                          {totalItems}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </motion.button>
+
+                  {/* Added toast */}
                   <AnimatePresence>
-                    {totalItems > 0 && (
-                      <motion.span 
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        exit={{ scale: 0 }}
-                        className="absolute top-1 right-1 w-4 h-4 bg-brand-orange text-white text-[10px] font-bold flex items-center justify-center rounded-full"
+                    {showToast && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 4, scale: 0.85 }}
+                        animate={{ opacity: 1, y: -8, scale: 1 }}
+                        exit={{ opacity: 0, y: -16, scale: 0.85 }}
+                        transition={{ duration: 0.25 }}
+                        className="absolute -top-9 left-1/2 -translate-x-1/2 bg-brand-dark text-white text-[11px] font-bold px-3 py-1.5 rounded-full whitespace-nowrap pointer-events-none"
                       >
-                        {totalItems}
-                      </motion.span>
+                        +1 Added!
+                      </motion.div>
                     )}
                   </AnimatePresence>
-                </button>
+                </div>
                 <button className="md:hidden p-2 hover:bg-brand-dark/5 rounded-full transition-colors">
                   <MenuIcon size={20} />
                 </button>
@@ -78,7 +114,7 @@ export const Navbar = () => {
               </div>
             </motion.div>
           ) : (
-            <motion.div 
+            <motion.div
               key="search-bar"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -96,7 +132,7 @@ export const Navbar = () => {
                   className="w-full bg-brand-light border-none rounded-xl py-3 pl-12 pr-4 focus:ring-2 focus:ring-brand-orange transition-all font-medium"
                 />
               </div>
-              <button 
+              <button
                 onClick={() => {
                   setIsSearchOpen(false);
                   setSearchQuery('');

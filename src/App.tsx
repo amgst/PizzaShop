@@ -2,7 +2,6 @@ import React from 'react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { Menu } from './components/Menu';
-import { AIAssistant } from './components/AIAssistant';
 import { Footer } from './components/Footer';
 import { CartProvider } from './context/CartContext';
 import { SearchProvider } from './context/SearchContext';
@@ -57,7 +56,6 @@ export default function App() {
           </section>
         </main>
         <Footer />
-        <AIAssistant />
       </div>
     </CartProvider>
   </SearchProvider>
