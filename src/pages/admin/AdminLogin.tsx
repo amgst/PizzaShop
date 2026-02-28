@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../../firebase';
 import { useNavigate } from 'react-router-dom';
 import { Pizza } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export const AdminLogin: React.FC = () => {
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const { user, isAdmin, loading: authLoading } = useAuth();
+    const { user, isAdmin, loading: authLoading, login } = useAuth();
     const navigate = useNavigate();
 
     React.useEffect(() => {
@@ -24,11 +22,10 @@ export const AdminLogin: React.FC = () => {
         setError('');
         setLoading(true);
 
-        try {
-            await signInWithEmailAndPassword(auth, email, password);
+        if (username === 'admin' && login(password)) {
             // Navigation handled by useEffect
-        } catch (err: any) {
-            setError(err.message || 'Failed to login');
+        } else {
+            setError('Invalid username or password');
             setLoading(false);
         }
     };
@@ -53,11 +50,11 @@ export const AdminLogin: React.FC = () => {
 
                 <form onSubmit={handleLogin} className="space-y-6">
                     <div>
-                        <label className="block text-sm font-semibold mb-2">Email</label>
+                        <label className="block text-sm font-semibold mb-2">Username</label>
                         <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            type="text"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
                             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
                             required
                         />

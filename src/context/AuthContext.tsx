@@ -1,65 +1,55 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, onAuthStateChanged } from 'firebase/auth';
-import { auth, db } from '../firebase';
-import { doc, getDoc } from 'firebase/firestore';
 
 interface AuthContextType {
-    user: User | null;
+    user: { email: string } | null;
     isAdmin: boolean;
     loading: boolean;
+    login: (password: string) => boolean;
+    logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
     user: null,
     isAdmin: false,
     loading: true,
+    login: () => false,
+    logout: () => { },
 });
 
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState<{ email: string } | null>(null);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            setLoading(true); // Ensure loading is true while we re-check status
-            setUser(user);
-            
-            if (user) {
-                try {
-                    // Check claims first
-                    const tokenResult = await user.getIdTokenResult();
-                    if (tokenResult.claims.admin) {
-                        setIsAdmin(true);
-                    } else {
-                        // Fallback to checking a users collection
-                        const userDocRef = doc(db, 'users', user.uid);
-                        const userDoc = await getDoc(userDocRef);
-                        
-                        if (userDoc.exists() && userDoc.data().isAdmin) {
-                            setIsAdmin(true);
-                        } else {
-                            console.warn(`User ${user.email} (${user.uid}) authenticated but is not an admin in Firestore or claims.`);
-                            setIsAdmin(false);
-                        }
-                    }
-                } catch (error) {
-                    console.error("Error checking admin status:", error);
-                    setIsAdmin(false);
-                }
-            } else {
-                setIsAdmin(false);
-            }
-            setLoading(false);
-        });
-
-        return () => unsubscribe();
+        const savedAuth = localStorage.getItem('admin_auth');
+        if (savedAuth === 'true') {
+            setUser({ email: 'admin' });
+            setIsAdmin(true);
+        }
+        setLoading(false);
     }, []);
 
+    const login = (password: string) => {
+        if (password === 'admin123') {
+            localStorage.setItem('admin_auth', 'true');
+            setUser({ email: 'admin' });
+            setIsAdmin(true);
+            return true;
+        }
+        return false;
+    };
+
+    const logout = () => {
+        localStorage.removeItem('admin_auth');
+        setUser(null);
+        setIsAdmin(false);
+    };
+
     return (
-        <AuthContext.Provider value={{ user, isAdmin, loading }}>
+        <AuthContext.Provider value={{ user, isAdmin, loading, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

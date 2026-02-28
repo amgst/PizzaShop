@@ -1,14 +1,14 @@
 import React from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { auth } from '../../firebase';
-import { signOut } from 'firebase/auth';
+import { useAuth } from '../../context/AuthContext';
 import { LayoutDashboard, Users, ShoppingBag, LogOut, Pizza } from 'lucide-react';
 
 export const AdminLayout: React.FC = () => {
+    const { logout } = useAuth();
     const navigate = useNavigate();
 
     const handleLogout = async () => {
-        await signOut(auth);
+        logout();
         navigate('/');
     };
 
