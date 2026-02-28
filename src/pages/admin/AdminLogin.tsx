@@ -3,13 +3,21 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../firebase';
 import { useNavigate } from 'react-router-dom';
 import { Pizza } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 export const AdminLogin: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const { user, isAdmin, loading: authLoading } = useAuth();
     const navigate = useNavigate();
+
+    React.useEffect(() => {
+        if (user && isAdmin) {
+            navigate('/admin');
+        }
+    }, [user, isAdmin, navigate]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -18,13 +26,14 @@ export const AdminLogin: React.FC = () => {
 
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            navigate('/admin');
+            // Navigation handled by useEffect
         } catch (err: any) {
             setError(err.message || 'Failed to login');
-        } finally {
             setLoading(false);
         }
     };
+
+    const displayError = error || (user && !isAdmin && !authLoading ? "You do not have admin privileges. Please contact the administrator." : "");
 
     return (
         <div className="min-h-screen bg-brand-light flex items-center justify-center p-6">
@@ -36,9 +45,9 @@ export const AdminLogin: React.FC = () => {
                 </div>
                 <h2 className="text-3xl font-display text-center mb-8">Admin Panel</h2>
 
-                {error && (
+                {displayError && (
                     <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-6 text-sm">
-                        {error}
+                        {displayError}
                     </div>
                 )}
 
