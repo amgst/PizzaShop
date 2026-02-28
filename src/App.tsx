@@ -10,6 +10,7 @@ import Storefront from './pages/Storefront';
 import { AdminLogin } from './pages/admin/AdminLogin';
 import { AdminLayout } from './components/admin/AdminLayout';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
+import { AdminProducts } from './pages/admin/AdminProducts';
 import { CartProvider } from './context/CartContext';
 import { SearchProvider } from './context/SearchContext';
 
@@ -30,7 +31,7 @@ export default function App() {
               <Route path="/admin" element={<ProtectedRoute />}>
                 <Route element={<AdminLayout />}>
                   <Route index element={<AdminDashboard />} />
-                  <Route path="products" element={<div className="p-8 text-2xl font-bold text-gray-400">Products Content Here</div>} />
+                  <Route path="products" element={<AdminProducts />} />
                   <Route path="orders" element={<div className="p-8 text-2xl font-bold text-gray-400">Orders Content Here</div>} />
                 </Route>
               </Route>
