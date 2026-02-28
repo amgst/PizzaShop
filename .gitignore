@@ -16,3 +16,5 @@ coverage/
 # OS
 Thumbs.db
 desktop.ini
+firestore.rules
+
