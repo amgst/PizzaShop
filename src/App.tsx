@@ -11,6 +11,7 @@ import { AdminLogin } from './pages/admin/AdminLogin';
 import { AdminLayout } from './components/admin/AdminLayout';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminProducts } from './pages/admin/AdminProducts';
+import { AdminOrders } from './pages/admin/AdminOrders';
 import { CartProvider } from './context/CartContext';
 import { SearchProvider } from './context/SearchContext';
 
@@ -32,7 +33,7 @@ export default function App() {
                 <Route element={<AdminLayout />}>
                   <Route index element={<AdminDashboard />} />
                   <Route path="products" element={<AdminProducts />} />
-                  <Route path="orders" element={<div className="p-8 text-2xl font-bold text-gray-400">Orders Content Here</div>} />
+                  <Route path="orders" element={<AdminOrders />} />
                 </Route>
               </Route>
             </Routes>

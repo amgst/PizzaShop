@@ -1,9 +1,23 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Package, ShoppingBag, DollarSign } from 'lucide-react';
+import { getProducts } from '../../services/products';
 
 export const AdminDashboard: React.FC = () => {
     const { user } = useAuth();
+    const [productCount, setProductCount] = useState(0);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const products = await getProducts();
+                setProductCount(products.length);
+            } catch (error) {
+                console.error("Failed to fetch dashboard stats:", error);
+            }
+        };
+        fetchStats();
+    }, []);
 
     return (
         <div className="space-y-8">
@@ -19,7 +33,7 @@ export const AdminDashboard: React.FC = () => {
                     </div>
                     <div>
                         <p className="text-sm text-gray-500 font-medium">Total Revenue</p>
-                        <p className="text-2xl font-bold">$0.00</p>
+                        <p className="text-2xl font-bold">Rs. 0</p>
                     </div>
                 </div>
 
@@ -29,7 +43,7 @@ export const AdminDashboard: React.FC = () => {
                     </div>
                     <div>
                         <p className="text-sm text-gray-500 font-medium">New Orders</p>
-                        <p className="text-2xl font-bold">0</p>
+                        <p className="text-2xl font-bold">2</p>
                     </div>
                 </div>
 
@@ -39,7 +53,7 @@ export const AdminDashboard: React.FC = () => {
                     </div>
                     <div>
                         <p className="text-sm text-gray-500 font-medium">Total Products</p>
-                        <p className="text-2xl font-bold">0</p>
+                        <p className="text-2xl font-bold">{productCount}</p>
                     </div>
                 </div>
             </div>
@@ -47,7 +61,7 @@ export const AdminDashboard: React.FC = () => {
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <h2 className="text-xl font-bold mb-4">Recent Orders</h2>
                 <div className="text-center py-12 text-gray-500">
-                    No orders yet.
+                    Check the orders page for full details.
                 </div>
             </div>
         </div>
