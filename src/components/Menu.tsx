@@ -1,13 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MenuItem } from '../data/menu';
+import { MenuItem, MENU_ITEMS } from '../data/menu';
 import { Plus, Minus, Star, Search } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useSearch } from '../context/SearchContext';
 import { ProductModal } from './ProductModal';
 import { getProducts } from '../services/products';
 
-const categories = ['Pizza', 'Burgers', 'Pasta', 'Wings', 'Sandwiches'];
+const categories = [
+  'Signature Pizzas',
+  'Gourmet White Pies',
+  'Spicy & Bold',
+  'Plant-Based',
+  'Calzones',
+  'Wings',
+  'Salads',
+  'Sides',
+  'Dips',
+  'Desserts'
+];
 
 export const Menu = () => {
   const [activeCategory, setActiveCategory] = useState(categories[0]);
@@ -42,9 +53,13 @@ export const Menu = () => {
     const fetchItems = async () => {
       try {
         const data = await getProducts();
-        setMenuItems(data);
+        // Merge DB items with static items to ensure full menu shows even if DB is partially seeded
+        const existingNames = new Set(data.map(d => d.name.trim().toLowerCase()));
+        const extras = MENU_ITEMS.filter(i => !existingNames.has(i.name.trim().toLowerCase()));
+        setMenuItems([...data, ...extras]);
       } catch (error) {
         console.error("Failed to fetch menu:", error);
+        setMenuItems(MENU_ITEMS);
       } finally {
         setLoading(false);
       }

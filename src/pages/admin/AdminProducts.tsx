@@ -66,6 +66,30 @@ export const AdminProducts: React.FC = () => {
         }
     };
 
+    const handleSeedMissing = async () => {
+        if (!window.confirm('Add any missing static items to the database?')) return;
+        setLoading(true);
+        try {
+            const existingNames = new Set(products.map(p => p.name.trim().toLowerCase()));
+            let added = 0;
+            for (const item of MENU_ITEMS) {
+                if (!existingNames.has(item.name.trim().toLowerCase())) {
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    const { id, ...productData } = item;
+                    await addProduct(productData);
+                    added++;
+                }
+            }
+            await fetchProducts();
+            alert(added > 0 ? `Added ${added} missing items.` : 'No missing items to add.');
+        } catch (error) {
+            console.error("Failed to add missing items:", error);
+            alert("Failed to add missing items");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const filteredProducts = products.filter(p =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.category.toLowerCase().includes(searchQuery.toLowerCase())
@@ -86,6 +110,15 @@ export const AdminProducts: React.FC = () => {
                         >
                             <Database size={20} />
                             Seed Initial Data
+                        </button>
+                    )}
+                    {products.length > 0 && !loading && (
+                        <button
+                            onClick={handleSeedMissing}
+                            className="bg-white text-brand-dark px-4 py-2.5 rounded-xl font-bold border border-gray-200 hover:bg-gray-50 transition-colors"
+                            title="Add items from the static list that are not yet in the database"
+                        >
+                            Add Missing Items
                         </button>
                     )}
                     <button
