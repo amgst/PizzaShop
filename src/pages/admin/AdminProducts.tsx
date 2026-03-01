@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Image as ImageIcon, Search, Database } from 'lucide-react';
+import { Plus, Edit2, Trash2, Image as ImageIcon, Search, Database, Upload } from 'lucide-react';
 import { MenuItem, MENU_ITEMS } from '../../data/menu';
 import { getProducts, addProduct, updateProduct, deleteProduct } from '../../services/products';
 import { ProductFormModal } from '../../components/admin/ProductFormModal';
+import { getProductImageUrl } from '../../utils/image';
 
 export const AdminProducts: React.FC = () => {
     const [products, setProducts] = useState<MenuItem[]>([]);
@@ -10,6 +11,7 @@ export const AdminProducts: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<MenuItem | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     const fetchProducts = async () => {
         setLoading(true);
@@ -90,6 +92,55 @@ export const AdminProducts: React.FC = () => {
         }
     };
 
+    const handleImportJSON = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const content = e.target?.result as string;
+                const data = JSON.parse(content);
+
+                if (!Array.isArray(data)) {
+                    throw new Error("JSON must be an array of products");
+                }
+
+                if (!window.confirm(`Are you sure you want to import ${data.length} products?`)) return;
+
+                setLoading(true);
+                let added = 0;
+                let skipped = 0;
+
+                for (const item of data) {
+                    // Basic validation
+                    if (!item.name || !item.category || typeof item.price !== 'number') {
+                        console.warn("Skipping invalid product:", item);
+                        skipped++;
+                        continue;
+                    }
+
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    const { id, ...productData } = item;
+                    await addProduct(productData);
+                    added++;
+                }
+
+                await fetchProducts();
+                alert(`Import complete! Added: ${added}, Skipped: ${skipped}`);
+            } catch (error) {
+                console.error("Failed to import JSON:", error);
+                alert("Failed to import JSON. Please ensure the file is valid.");
+            } finally {
+                setLoading(false);
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = '';
+                }
+            }
+        };
+        reader.readAsText(file);
+    };
+
     const filteredProducts = products.filter(p =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.category.toLowerCase().includes(searchQuery.toLowerCase())
@@ -122,6 +173,14 @@ export const AdminProducts: React.FC = () => {
                         </button>
                     )}
                     <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="bg-white text-brand-dark px-4 py-2.5 rounded-xl font-bold border border-gray-200 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                        title="Import products from a JSON file"
+                    >
+                        <Upload size={20} />
+                        Import JSON
+                    </button>
+                    <button
                         onClick={() => {
                             setEditingProduct(null);
                             setIsModalOpen(true);
@@ -133,6 +192,14 @@ export const AdminProducts: React.FC = () => {
                     </button>
                 </div>
             </div>
+
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImportJSON}
+                accept=".json"
+                className="hidden"
+            />
 
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-4 border-b border-gray-100 flex items-center gap-4">
@@ -179,7 +246,7 @@ export const AdminProducts: React.FC = () => {
                                             <div className="flex items-center gap-4">
                                                 <div className="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden shrink-0">
                                                     {product.image ? (
-                                                        <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                                                        <img src={getProductImageUrl(product.image)} alt={product.name} className="w-full h-full object-cover" />
                                                     ) : (
                                                         <div className="w-full h-full flex items-center justify-center text-gray-400">
                                                             <ImageIcon size={20} />
@@ -245,6 +312,6 @@ export const AdminProducts: React.FC = () => {
                 onSave={handleSave}
                 initialData={editingProduct}
             />
-        </div>
+        </div >
     );
 };

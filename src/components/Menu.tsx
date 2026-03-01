@@ -6,6 +6,7 @@ import { useCart } from '../context/CartContext';
 import { useSearch } from '../context/SearchContext';
 import { ProductModal } from './ProductModal';
 import { getProducts } from '../services/products';
+import { getProductImageUrl } from '../utils/image';
 
 const categories = [
   'Signature Pizzas',
@@ -113,8 +114,8 @@ export const Menu = () => {
                 key={cat}
                 onClick={() => scrollToSection(cat)}
                 className={`px-8 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap shrink-0 ${activeCategory === cat
-                    ? 'bg-brand-orange text-white shadow-lg shadow-brand-orange/30'
-                    : 'bg-brand-dark/5 hover:bg-brand-dark/10 text-brand-dark'
+                  ? 'bg-brand-orange text-white shadow-lg shadow-brand-orange/30'
+                  : 'bg-brand-dark/5 hover:bg-brand-dark/10 text-brand-dark'
                   }`}
               >
                 {cat}
@@ -163,7 +164,7 @@ export const Menu = () => {
                       >
                         <div className="relative h-64 overflow-hidden">
                           <img
-                            src={item.image}
+                            src={getProductImageUrl(item.image)}
                             alt={item.name}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                             referrerPolicy="no-referrer"

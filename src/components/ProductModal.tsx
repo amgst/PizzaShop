@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Plus, Minus, Star, Clock, Flame, Info } from 'lucide-react';
 import { MenuItem } from '../data/menu';
 import { useCart } from '../context/CartContext';
+import { getProductImageUrl } from '../utils/image';
 
 interface ProductModalProps {
   product: MenuItem | null;
@@ -11,7 +12,7 @@ interface ProductModalProps {
 
 export const ProductModal = ({ product, onClose }: ProductModalProps) => {
   const { items, updateQuantity } = useCart();
-  
+
   if (!product) return null;
 
   const quantity = items.find(item => item.id === product.id)?.quantity || 0;
@@ -27,7 +28,7 @@ export const ProductModal = ({ product, onClose }: ProductModalProps) => {
             onClick={onClose}
             className="absolute inset-0 bg-brand-dark/60 backdrop-blur-md"
           />
-          
+
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -36,8 +37,8 @@ export const ProductModal = ({ product, onClose }: ProductModalProps) => {
           >
             {/* Image Section */}
             <div className="w-full md:w-1/2 h-64 md:h-auto relative">
-              <img 
-                src={product.image} 
+              <img
+                src={getProductImageUrl(product.image)}
                 alt={product.name}
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
@@ -48,7 +49,7 @@ export const ProductModal = ({ product, onClose }: ProductModalProps) => {
                   POPULAR CHOICE
                 </div>
               )}
-              <button 
+              <button
                 onClick={onClose}
                 className="absolute top-6 right-6 p-2 bg-white/20 backdrop-blur-md hover:bg-white/40 text-white rounded-full transition-colors md:hidden"
               >
@@ -59,7 +60,7 @@ export const ProductModal = ({ product, onClose }: ProductModalProps) => {
             {/* Content Section */}
             <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col">
               <div className="hidden md:flex justify-end mb-4">
-                <button 
+                <button
                   onClick={onClose}
                   className="p-2 hover:bg-brand-dark/5 rounded-full transition-colors"
                 >
@@ -72,7 +73,7 @@ export const ProductModal = ({ product, onClose }: ProductModalProps) => {
                   {product.category}
                 </div>
                 <h2 className="text-4xl font-display mb-4 leading-tight">{product.name}</h2>
-                
+
                 <div className="flex items-center gap-6 mb-8">
                   <div className="flex items-center gap-2 text-brand-dark/50">
                     <Clock size={18} />
@@ -144,14 +145,14 @@ export const ProductModal = ({ product, onClose }: ProductModalProps) => {
                         exit={{ opacity: 0, y: -10 }}
                         className="w-full h-full bg-brand-orange text-white rounded-2xl flex items-center justify-between px-2"
                       >
-                        <button 
+                        <button
                           onClick={() => updateQuantity(product.id, -1)}
                           className="p-3 hover:bg-white/10 rounded-xl transition-colors"
                         >
                           <Minus size={20} />
                         </button>
                         <span className="font-display text-2xl">{quantity}</span>
-                        <button 
+                        <button
                           onClick={() => updateQuantity(product.id, 1)}
                           className="p-3 hover:bg-white/10 rounded-xl transition-colors"
                         >

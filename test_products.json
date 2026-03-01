@@ -1,0 +1,37 @@
+[
+    {
+        "name": "Simplified Path Pizza",
+        "description": "This pizza uses just the filename (e.g., 'margherita.jpg') in the JSON.",
+        "price": 1650,
+        "category": "Signature Pizzas",
+        "image": "margherita.jpg",
+        "popular": true
+    },
+    {
+        "name": "Local Image Pizza",
+        "description": "This pizza uses an image from your local public/products folder.",
+        "price": 1600,
+        "category": "Signature Pizzas",
+        "image": "/products/margherita.jpg",
+        "popular": true
+    },
+    {
+        "name": "Imported Test Pizza",
+        "description": "A delicious pizza imported via JSON for testing purposes.",
+        "price": 1500,
+        "category": "Signature Pizzas",
+        "image": "https://images.unsplash.com/photo-1548365328-9f547fbafd74?auto=format&fit=crop&w=800&q=80",
+        "popular": true
+    },
+    {
+        "name": "Zesty Veggie Roll",
+        "description": "Roasted vegetables with a hint of lemon and herbs.",
+        "price": 1200,
+        "category": "Plant-Based",
+        "image": "https://images.unsplash.com/photo-1546549037-848203b6f806?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+        "name": "Invalid Product",
+        "category": "Sides"
+    }
+]

@@ -141,15 +141,16 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onCl
                         </div>
 
                         <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700">Image URL</label>
+                            <label className="block text-sm font-medium text-gray-700">Image (URL or Filename)</label>
                             <input
-                                type="url"
+                                type="text"
                                 required
                                 value={image}
                                 onChange={e => setImage(e.target.value)}
                                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all font-medium"
-                                placeholder="https://..."
+                                placeholder="E.g., pizza.jpg or https://..."
                             />
+                            <p className="text-[10px] text-gray-400">Filenames are loaded from /public/products/</p>
                         </div>
                     </div>
 
