@@ -34,7 +34,7 @@ export default function App() {
               <div>
                 <h2 className="text-5xl font-display mb-8">CRAFTING THE <span className="text-brand-orange">PERFECT SLICE</span> SINCE 2014</h2>
                 <p className="text-lg text-brand-dark/70 mb-8 leading-relaxed">
-                  Second Slice started with a simple mission: to bring the most authentic, cheesy, and delicious pizza to the streets of Lahore. Over the years, we've expanded our menu to include burgers, pasta, and more, but our commitment to quality has never wavered.
+                  Pizza Shop started with a simple mission: to bring the most authentic, cheesy, and delicious pizza to every neighborhood. Over the years, we've expanded our menu to include burgers, pasta, and more, but our commitment to quality has never wavered.
                 </p>
                 <div className="grid grid-cols-2 gap-8">
                   <div className="space-y-2">

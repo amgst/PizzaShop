@@ -1,15 +1,32 @@
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, ShoppingBag, Plus, Minus, Trash2 } from 'lucide-react';
+import { X, ShoppingBag, Plus, Minus, Trash2, User } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
-import { getProductImageUrl } from '../utils/image';
+import { getProductImageUrl, handleProductImageError } from '../utils/image';
 import { MENU_ITEMS } from '../data/menu';
 import { computeCartPricing, FREE_DELIVERY_THRESHOLD, FREE_DESSERT_THRESHOLD } from '../utils/pricing';
 
 export const CartDrawer = () => {
-  const { items, totalItems, updateQuantity, removeItem, isCartOpen, setIsCartOpen } = useCart();
+  const {
+    items,
+    totalItems,
+    updateQuantity,
+    removeItem,
+    isCartOpen,
+    setIsCartOpen,
+    customerUser,
+    customerLoading,
+    registerCustomer,
+    loginCustomer,
+    logoutCustomer
+  } = useCart();
   const navigate = useNavigate();
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [authMode, setAuthMode] = React.useState<'register' | 'login'>('register');
+  const [authError, setAuthError] = React.useState('');
+  const [authBusy, setAuthBusy] = React.useState(false);
   const pricing = computeCartPricing(items);
   const progressToFreeDessert = Math.min((pricing.subtotal / FREE_DESSERT_THRESHOLD) * 100, 100);
   const cartIds = useMemo(() => new Set(items.map(i => i.id)), [items]);
@@ -24,6 +41,32 @@ export const CartDrawer = () => {
         .slice(0, 3),
     [cartIds]
   );
+
+  const handleAuthSubmit = async () => {
+    setAuthError('');
+    if (!email.trim() || !password.trim()) {
+      setAuthError('Email and password are required.');
+      return;
+    }
+    if (password.trim().length < 6) {
+      setAuthError('Use at least 6 characters for password.');
+      return;
+    }
+
+    try {
+      setAuthBusy(true);
+      if (authMode === 'register') {
+        await registerCustomer(email.trim(), password.trim());
+      } else {
+        await loginCustomer(email.trim(), password.trim());
+      }
+      setPassword('');
+    } catch {
+      setAuthError(authMode === 'register' ? 'Signup failed. Try another email.' : 'Login failed. Check your credentials.');
+    } finally {
+      setAuthBusy(false);
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -115,6 +158,63 @@ export const CartDrawer = () => {
                     )}
                   </div>
 
+                  <div className="rounded-2xl border border-brand-dark/10 p-4 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <User size={16} className="text-brand-orange" />
+                      <h4 className="text-xs font-bold uppercase tracking-widest text-brand-dark/50">Save Cart</h4>
+                    </div>
+                    {customerLoading ? (
+                      <p className="text-xs text-brand-dark/50">Checking account...</p>
+                    ) : customerUser ? (
+                      <>
+                        <p className="text-xs text-brand-dark/60">Synced as <span className="font-bold">{customerUser.email}</span></p>
+                        <button
+                          onClick={() => logoutCustomer()}
+                          className="text-xs font-bold text-brand-orange hover:text-orange-700"
+                        >
+                          Log out
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-xs text-brand-dark/60">Guest cart is saved on this device. Create/login to sync with Firebase.</p>
+                        <input
+                          type="email"
+                          placeholder="Email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="w-full bg-brand-light border border-brand-dark/10 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-orange/40"
+                        />
+                        <input
+                          type="password"
+                          placeholder="Password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="w-full bg-brand-light border border-brand-dark/10 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-orange/40"
+                        />
+                        {authError && <p className="text-xs text-red-500">{authError}</p>}
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handleAuthSubmit}
+                            disabled={authBusy}
+                            className="flex-1 bg-brand-dark text-white rounded-xl py-2 text-xs font-bold hover:bg-brand-orange transition-colors disabled:opacity-60"
+                          >
+                            {authBusy ? 'Please wait...' : authMode === 'register' ? 'Quick Sign Up' : 'Login'}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setAuthMode((prev) => (prev === 'register' ? 'login' : 'register'));
+                              setAuthError('');
+                            }}
+                            className="flex-1 bg-white border border-brand-dark/10 rounded-xl py-2 text-xs font-bold hover:bg-brand-light transition-colors"
+                          >
+                            {authMode === 'register' ? 'I have account' : 'Create account'}
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+
                   {quickAddOns.length > 0 && (
                     <div className="space-y-3">
                       <h4 className="text-xs font-bold uppercase tracking-widest text-brand-dark/50">Quick Add-ons</h4>
@@ -125,6 +225,7 @@ export const CartDrawer = () => {
                             alt={addon.name}
                             className="w-12 h-12 rounded-xl object-cover"
                             referrerPolicy="no-referrer"
+                            onError={handleProductImageError}
                           />
                           <div className="flex-1 min-w-0">
                             <p className="font-bold text-sm truncate">{addon.name}</p>
@@ -154,6 +255,7 @@ export const CartDrawer = () => {
                         alt={item.name}
                         className="w-20 h-20 rounded-2xl object-cover"
                         referrerPolicy="no-referrer"
+                        onError={handleProductImageError}
                       />
                       <div className="flex-1">
                         <div className="flex justify-between items-start mb-1">

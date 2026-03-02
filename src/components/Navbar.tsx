@@ -1,16 +1,18 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { ShoppingBag, Menu as MenuIcon, Search, X } from 'lucide-react';
+import { ShoppingBag, Menu as MenuIcon, Search, X, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCart } from '../context/CartContext';
 import { useSearch } from '../context/SearchContext';
 
 export const Navbar = () => {
-  const { totalItems, setIsCartOpen } = useCart();
+  const { totalItems, setIsCartOpen, customerUser, logoutCustomer } = useCart();
   const { searchQuery, setSearchQuery, isSearchOpen, setIsSearchOpen } = useSearch();
   const inputRef = useRef<HTMLInputElement>(null);
   const prevTotalRef = useRef(totalItems);
   const [bump, setBump] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   useEffect(() => {
     if (isSearchOpen && inputRef.current) {
@@ -29,6 +31,19 @@ export const Navbar = () => {
     }
     prevTotalRef.current = totalItems;
   }, [totalItems]);
+
+  const handleOrderNow = () => {
+    const menuSection = document.getElementById('menu');
+    menuSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setIsCartOpen(true);
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleMobileNav = (sectionId: 'menu' | 'about') => {
+    const section = document.getElementById(sectionId);
+    section?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setIsMobileMenuOpen(false);
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4">
@@ -49,13 +64,12 @@ export const Navbar = () => {
                   className="text-2xl font-display tracking-tighter text-brand-orange cursor-pointer"
                   onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                 >
-                  SECOND<span className="text-brand-dark">SLICE</span>
+                  PIZZA<span className="text-brand-dark">SHOP</span>
                 </motion.div>
 
                 <div className="hidden md:flex items-center gap-6 text-sm font-medium">
                   <a href="#menu" className="hover:text-brand-orange transition-colors">Menu</a>
                   <a href="#about" className="hover:text-brand-orange transition-colors">About</a>
-                  <a href="#locations" className="hover:text-brand-orange transition-colors">Locations</a>
                 </div>
               </div>
 
@@ -105,12 +119,61 @@ export const Navbar = () => {
                     )}
                   </AnimatePresence>
                 </div>
-                <button className="md:hidden p-2 hover:bg-brand-dark/5 rounded-full transition-colors">
-                  <MenuIcon size={20} />
+                <button
+                  onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+                  className="md:hidden p-2 hover:bg-brand-dark/5 rounded-full transition-colors"
+                  aria-label={isMobileMenuOpen ? 'Close mobile menu' : 'Open mobile menu'}
+                >
+                  {isMobileMenuOpen ? <X size={20} /> : <MenuIcon size={20} />}
                 </button>
-                <button className="hidden md:block bg-brand-dark text-white px-6 py-2 rounded-xl font-medium hover:bg-brand-orange transition-all active:scale-95">
+                <button
+                  onClick={handleOrderNow}
+                  className="hidden md:block bg-brand-dark text-white px-6 py-2 rounded-xl font-medium hover:bg-brand-orange transition-all active:scale-95"
+                >
                   Order Now
                 </button>
+                <div className="hidden md:block relative">
+                  {customerUser ? (
+                    <>
+                      <button
+                        onClick={() => setIsUserMenuOpen((prev) => !prev)}
+                        className="bg-brand-light text-brand-dark px-4 py-2 rounded-xl font-medium hover:bg-brand-dark hover:text-white transition-all flex items-center gap-2"
+                      >
+                        <User size={16} />
+                        Account
+                      </button>
+                      <AnimatePresence>
+                        {isUserMenuOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 8 }}
+                            className="absolute right-0 mt-2 w-64 bg-white border border-brand-dark/10 rounded-2xl shadow-xl p-3 z-20"
+                          >
+                            <p className="text-xs text-brand-dark/50 mb-2">Signed in as</p>
+                            <p className="text-sm font-bold text-brand-dark truncate mb-3">{customerUser.email}</p>
+                            <button
+                              onClick={async () => {
+                                await logoutCustomer();
+                                setIsUserMenuOpen(false);
+                              }}
+                              className="w-full text-left px-3 py-2 rounded-xl hover:bg-brand-light text-sm font-medium"
+                            >
+                              Logout
+                            </button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => setIsCartOpen(true)}
+                      className="bg-brand-light text-brand-dark px-4 py-2 rounded-xl font-medium hover:bg-brand-dark hover:text-white transition-all"
+                    >
+                      Sign Up
+                    </button>
+                  )}
+                </div>
               </div>
             </motion.div>
           ) : (
@@ -145,6 +208,62 @@ export const Navbar = () => {
           )}
         </AnimatePresence>
       </div>
+      <AnimatePresence>
+        {isMobileMenuOpen && !isSearchOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="md:hidden max-w-7xl mx-auto mt-3 glass-card rounded-2xl p-4"
+          >
+            <div className="flex flex-col gap-2 text-sm font-medium">
+              <button
+                onClick={() => handleMobileNav('menu')}
+                className="w-full text-left px-4 py-3 rounded-xl hover:bg-brand-dark/5 transition-colors"
+              >
+                Menu
+              </button>
+              <button
+                onClick={() => handleMobileNav('about')}
+                className="w-full text-left px-4 py-3 rounded-xl hover:bg-brand-dark/5 transition-colors"
+              >
+                About
+              </button>
+              <button
+                onClick={handleOrderNow}
+                className="w-full text-left px-4 py-3 rounded-xl bg-brand-dark text-white hover:bg-brand-orange transition-colors"
+              >
+                Order Now
+              </button>
+              {customerUser ? (
+                <>
+                  <div className="px-4 pt-2 text-xs text-brand-dark/50">Signed in as</div>
+                  <div className="px-4 text-sm font-bold truncate">{customerUser.email}</div>
+                  <button
+                    onClick={async () => {
+                      await logoutCustomer();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-3 rounded-xl hover:bg-brand-dark/5 transition-colors"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => {
+                    setIsCartOpen(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-3 rounded-xl hover:bg-brand-dark/5 transition-colors"
+                >
+                  Sign Up / Login
+                </button>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 };

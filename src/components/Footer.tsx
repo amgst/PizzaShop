@@ -8,10 +8,10 @@ export const Footer = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           <div className="space-y-6">
             <div className="text-3xl font-display tracking-tighter text-brand-orange">
-              SECOND<span className="text-white">SLICE</span>
+              PIZZA<span className="text-white">SHOP</span>
             </div>
             <p className="text-white/60 leading-relaxed">
-              Lahore's favorite spot for cheesy pizzas, juicy burgers, and everything in between. Stay cheesy!
+              Your favorite spot for cheesy pizzas, juicy burgers, and everything in between. Stay cheesy!
             </p>
             <div className="flex gap-4">
               <a href="#" className="p-3 bg-white/5 rounded-xl hover:bg-brand-orange transition-colors">
@@ -41,15 +41,7 @@ export const Footer = () => {
             <ul className="space-y-6 text-white/60">
               <li className="flex gap-3">
                 <MapPin className="text-brand-orange shrink-0" size={20} />
-                <span>DHA Phase 4, Sector FF, Lahore</span>
-              </li>
-              <li className="flex gap-3">
-                <MapPin className="text-brand-orange shrink-0" size={20} />
-                <span>Johar Town, Block G, Lahore</span>
-              </li>
-              <li className="flex gap-3">
-                <MapPin className="text-brand-orange shrink-0" size={20} />
-                <span>Gulberg III, MM Alam Rd, Lahore</span>
+                <span>1234 Broadway Ave, New York, NY 10001, USA</span>
               </li>
             </ul>
           </div>
@@ -59,7 +51,7 @@ export const Footer = () => {
             <ul className="space-y-6 text-white/60">
               <li className="flex gap-3">
                 <Phone className="text-brand-orange shrink-0" size={20} />
-                <span>+92 300 1234567</span>
+                <span>+1 (212) 555-0147</span>
               </li>
               <li className="flex gap-3">
                 <Clock className="text-brand-orange shrink-0" size={20} />
@@ -70,7 +62,7 @@ export const Footer = () => {
         </div>
         
         <div className="pt-12 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-white/40">
-          <p>© 2024 Second Slice. All rights reserved.</p>
+          <p>&copy; 2024 Pizza Shop. All rights reserved.</p>
           <div className="flex gap-8">
             <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
@@ -80,3 +72,5 @@ export const Footer = () => {
     </footer>
   );
 };
+
+

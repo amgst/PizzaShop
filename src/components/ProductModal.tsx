@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Plus, Minus, Star, Clock, Flame, Info } from 'lucide-react';
 import { MenuItem, MENU_ITEMS } from '../data/menu';
 import { useCart } from '../context/CartContext';
-import { getProductImageUrl } from '../utils/image';
+import { getProductImageUrl, handleProductImageError } from '../utils/image';
 
 interface ProductModalProps {
   product: MenuItem | null;
@@ -62,6 +62,7 @@ export const ProductModal = ({ product, onClose }: ProductModalProps) => {
                 alt={product.name}
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
+                onError={handleProductImageError}
               />
               {product.popular && (
                 <div className="absolute top-6 left-6 bg-brand-yellow text-brand-dark px-4 py-1.5 rounded-full text-xs font-black flex items-center gap-1.5 shadow-lg">
@@ -145,6 +146,7 @@ export const ProductModal = ({ product, onClose }: ProductModalProps) => {
                             alt={item.name}
                             className="w-12 h-12 rounded-xl object-cover"
                             referrerPolicy="no-referrer"
+                            onError={handleProductImageError}
                           />
                           <div className="flex-1 min-w-0">
                             <p className="font-bold text-sm truncate">{item.name}</p>

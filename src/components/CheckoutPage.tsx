@@ -5,7 +5,7 @@ import {
     Banknote, ChevronRight, CheckCircle2, ShoppingBag, Plus
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { getProductImageUrl } from '../utils/image';
+import { getProductImageUrl, handleProductImageError } from '../utils/image';
 import { MENU_ITEMS } from '../data/menu';
 import { computeCartPricing, FREE_DELIVERY_THRESHOLD, FREE_DESSERT_THRESHOLD } from '../utils/pricing';
 
@@ -209,7 +209,7 @@ export const CheckoutPage = ({ onBack }: CheckoutPageProps) => {
                                         <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-dark/30" />
                                         <input
                                             type="tel"
-                                            placeholder="0300 1234567"
+                                            placeholder="+1 (212) 555-0147"
                                             value={form.phone}
                                             onChange={e => set('phone', e.target.value)}
                                             className={`${INPUT_CLASS} pl-10 ${errors.phone ? 'border-red-400' : ''}`}
@@ -224,7 +224,7 @@ export const CheckoutPage = ({ onBack }: CheckoutPageProps) => {
                                 <div className="relative">
                                     <MapPin size={16} className="absolute left-4 top-4 text-brand-dark/30" />
                                     <textarea
-                                        placeholder="House no., street, area..."
+                                        placeholder="1234 Broadway Ave, Apt 5B"
                                         rows={2}
                                         value={form.address}
                                         onChange={e => set('address', e.target.value)}
@@ -238,7 +238,7 @@ export const CheckoutPage = ({ onBack }: CheckoutPageProps) => {
                                 <label className="field-label">City</label>
                                 <input
                                     type="text"
-                                    placeholder="Lahore"
+                                    placeholder="New York"
                                     value={form.city}
                                     onChange={e => set('city', e.target.value)}
                                     className={`${INPUT_CLASS} ${errors.city ? 'border-red-400' : ''}`}
@@ -347,6 +347,7 @@ export const CheckoutPage = ({ onBack }: CheckoutPageProps) => {
                                             alt={item.name}
                                             className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
                                             referrerPolicy="no-referrer"
+                                            onError={handleProductImageError}
                                         />
                                         <div className="flex-1 min-w-0">
                                             <p className="font-bold text-sm truncate">{item.name}</p>
@@ -408,6 +409,7 @@ export const CheckoutPage = ({ onBack }: CheckoutPageProps) => {
                                             alt={addon.name}
                                             className="w-12 h-12 rounded-xl object-cover"
                                             referrerPolicy="no-referrer"
+                                            onError={handleProductImageError}
                                         />
                                         <div className="flex-1 min-w-0">
                                             <p className="font-bold text-sm truncate">{addon.name}</p>
