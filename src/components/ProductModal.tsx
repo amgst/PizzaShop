@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Plus, Minus, Star, Clock, Flame, Info } from 'lucide-react';
-import { MenuItem } from '../data/menu';
+import { MenuItem, MENU_ITEMS } from '../data/menu';
 import { useCart } from '../context/CartContext';
 import { getProductImageUrl } from '../utils/image';
 
@@ -11,11 +11,31 @@ interface ProductModalProps {
 }
 
 export const ProductModal = ({ product, onClose }: ProductModalProps) => {
-  const { items, updateQuantity } = useCart();
+  const { items, updateQuantity, setIsCartOpen } = useCart();
 
   if (!product) return null;
 
   const quantity = items.find(item => item.id === product.id)?.quantity || 0;
+  const cartIds = new Set(items.map(item => item.id));
+  const relatedCategories: Record<MenuItem['category'], MenuItem['category'][]> = {
+    'Signature Pizzas': ['Dips', 'Sides', 'Desserts'],
+    'Gourmet White Pies': ['Dips', 'Sides', 'Desserts'],
+    'Spicy & Bold': ['Dips', 'Wings', 'Desserts'],
+    'Plant-Based': ['Dips', 'Salads', 'Desserts'],
+    'Calzones': ['Dips', 'Sides', 'Desserts'],
+    'Wings': ['Dips', 'Sides', 'Desserts'],
+    'Salads': ['Sides', 'Dips', 'Desserts'],
+    'Sides': ['Dips', 'Desserts', 'Wings'],
+    'Dips': ['Sides', 'Wings', 'Desserts'],
+    'Desserts': ['Signature Pizzas', 'Dips', 'Sides']
+  };
+  const frequentPairings = useMemo(() => {
+    const targetCategories = new Set(relatedCategories[product.category]);
+    return MENU_ITEMS
+      .filter(item => item.id !== product.id && targetCategories.has(item.category) && !cartIds.has(item.id))
+      .sort((a, b) => Number(b.popular || false) - Number(a.popular || false))
+      .slice(0, 3);
+  }, [cartIds, product.category, product.id]);
 
   return (
     <AnimatePresence>
@@ -113,6 +133,37 @@ export const ProductModal = ({ product, onClose }: ProductModalProps) => {
                     </p>
                   )}
                 </div>
+
+                {frequentPairings.length > 0 && (
+                  <div className="mb-8">
+                    <div className="text-xs font-bold uppercase tracking-widest text-brand-dark/40 mb-3">Frequently Bought Together</div>
+                    <div className="space-y-2">
+                      {frequentPairings.map((item) => (
+                        <div key={item.id} className="bg-brand-light rounded-2xl p-3 flex items-center gap-3">
+                          <img
+                            src={getProductImageUrl(item.image)}
+                            alt={item.name}
+                            className="w-12 h-12 rounded-xl object-cover"
+                            referrerPolicy="no-referrer"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-sm truncate">{item.name}</p>
+                            <p className="text-xs text-brand-dark/50">Rs. {item.price.toLocaleString()}</p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              updateQuantity(item.id, 1, item);
+                              setIsCartOpen(true);
+                            }}
+                            className="bg-white text-brand-dark px-3 py-2 rounded-xl text-xs font-bold hover:bg-brand-dark hover:text-white transition-colors"
+                          >
+                            + Add
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center justify-between gap-6 pt-6 border-t border-brand-dark/5">
@@ -131,7 +182,10 @@ export const ProductModal = ({ product, onClose }: ProductModalProps) => {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        onClick={() => updateQuantity(product.id, 1)}
+                        onClick={() => {
+                          updateQuantity(product.id, 1, product);
+                          setIsCartOpen(true);
+                        }}
                         className="w-full h-full bg-brand-dark text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-brand-orange transition-all active:scale-95"
                       >
                         <Plus size={20} />
@@ -153,7 +207,7 @@ export const ProductModal = ({ product, onClose }: ProductModalProps) => {
                         </button>
                         <span className="font-display text-2xl">{quantity}</span>
                         <button
-                          onClick={() => updateQuantity(product.id, 1)}
+                          onClick={() => updateQuantity(product.id, 1, product)}
                           className="p-3 hover:bg-white/10 rounded-xl transition-colors"
                         >
                           <Plus size={20} />

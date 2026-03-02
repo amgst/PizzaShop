@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { MenuItem, MENU_ITEMS } from '../data/menu';
+import { MenuItem } from '../data/menu';
 
 interface CartItem extends MenuItem {
   quantity: number;
@@ -11,7 +11,7 @@ interface CartContextType {
   totalPrice: number;
   addItem: (item: MenuItem) => void;
   removeItem: (id: string) => void;
-  updateQuantity: (id: string, delta: number) => void;
+  updateQuantity: (id: string, delta: number, item?: MenuItem) => void;
   clearCart: () => void;
   isCartOpen: boolean;
   setIsCartOpen: (isOpen: boolean) => void;
@@ -20,13 +20,10 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [cart, setCart] = useState<{ [key: string]: number }>({});
+  const [cart, setCart] = useState<{ [key: string]: { item: MenuItem; quantity: number } }>({});
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  const items = Object.entries(cart).map(([id, quantity]) => {
-    const menuItem = MENU_ITEMS.find(item => item.id === id)!;
-    return { ...menuItem, quantity };
-  });
+  const items = Object.values(cart).map(({ item, quantity }) => ({ ...item, quantity }));
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -34,7 +31,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const addItem = (item: MenuItem) => {
     setCart(prev => ({
       ...prev,
-      [item.id]: (prev[item.id] || 0) + 1
+      [item.id]: {
+        item,
+        quantity: (prev[item.id]?.quantity || 0) + 1
+      }
     }));
   };
 
@@ -45,15 +45,23 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const updateQuantity = (id: string, delta: number) => {
+  const updateQuantity = (id: string, delta: number, item?: MenuItem) => {
     setCart(prev => {
-      const current = prev[id] || 0;
+      const currentEntry = prev[id];
+      const current = currentEntry?.quantity || 0;
       const next = current + delta;
       if (next <= 0) {
         const { [id]: _, ...rest } = prev;
         return rest;
       }
-      return { ...prev, [id]: next };
+      if (!currentEntry && !item) return prev;
+      return {
+        ...prev,
+        [id]: {
+          item: currentEntry?.item || item!,
+          quantity: next
+        }
+      };
     });
   };
 

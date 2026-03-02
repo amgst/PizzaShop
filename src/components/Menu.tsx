@@ -7,6 +7,7 @@ import { useSearch } from '../context/SearchContext';
 import { ProductModal } from './ProductModal';
 import { getProducts } from '../services/products';
 import { getProductImageUrl } from '../utils/image';
+import { BUNDLE_DISCOUNT, FREE_DELIVERY_THRESHOLD, FREE_DESSERT_THRESHOLD } from '../utils/pricing';
 
 const categories = [
   'Signature Pizzas',
@@ -26,7 +27,7 @@ export const Menu = () => {
   const [selectedProduct, setSelectedProduct] = useState<MenuItem | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const { items, updateQuantity } = useCart();
+  const { items, updateQuantity, setIsCartOpen } = useCart();
   const { searchQuery } = useSearch();
   const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -166,6 +167,23 @@ export const Menu = () => {
 
       {/* Menu Sections */}
       <div className="max-w-7xl mx-auto px-6 py-12 space-y-24">
+        <div className="bg-brand-dark text-white rounded-3xl p-6 md:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-widest text-white/60 font-bold mb-2">Value Deals</p>
+            <h3 className="font-display text-2xl">Pizza Party Bundle: 2 Pizzas + 1 Side + 1 Dip</h3>
+            <p className="text-white/70 text-sm">Auto-save Rs. {BUNDLE_DISCOUNT} in cart. Free delivery over Rs. {FREE_DELIVERY_THRESHOLD.toLocaleString()} and free dessert unlock at Rs. {FREE_DESSERT_THRESHOLD.toLocaleString()}.</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setActiveCategory('Signature Pizzas');
+              scrollToSection('Signature Pizzas');
+            }}
+            className="bg-brand-orange px-6 py-3 rounded-2xl font-bold hover:shadow-lg hover:shadow-brand-orange/30 transition-all"
+          >
+            Build My Bundle
+          </button>
+        </div>
         {loading ? (
           <div className="flex justify-center flex-col items-center py-24 text-brand-dark/50 gap-4">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-orange"></div>
@@ -245,7 +263,8 @@ export const Menu = () => {
                                   exit={{ opacity: 0, scale: 0.95 }}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    updateQuantity(item.id, 1);
+                                    updateQuantity(item.id, 1, item);
+                                    setIsCartOpen(true);
                                   }}
                                   className="w-full h-full bg-white border border-brand-dark/10 rounded-2xl font-bold flex items-center justify-center gap-2 group-hover:bg-brand-dark group-hover:text-white transition-all"
                                 >
@@ -274,7 +293,7 @@ export const Menu = () => {
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      updateQuantity(item.id, 1);
+                                      updateQuantity(item.id, 1, item);
                                     }}
                                     className="p-3 hover:bg-white/10 rounded-xl transition-colors"
                                   >

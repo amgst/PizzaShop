@@ -2,20 +2,22 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
     ArrowLeft, MapPin, Phone, User, Clock, CreditCard,
-    Banknote, ChevronRight, CheckCircle2, ShoppingBag
+    Banknote, ChevronRight, CheckCircle2, ShoppingBag, Plus
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { getProductImageUrl } from '../utils/image';
+import { MENU_ITEMS } from '../data/menu';
+import { computeCartPricing, FREE_DELIVERY_THRESHOLD, FREE_DESSERT_THRESHOLD } from '../utils/pricing';
 
 interface CheckoutPageProps {
     onBack: () => void;
 }
 
-const DELIVERY_FEE = 150;
 const INPUT_CLASS =
     'w-full bg-brand-light border-2 border-transparent focus:border-brand-orange rounded-2xl px-4 py-3 font-medium text-brand-dark placeholder:text-brand-dark/30 transition-all outline-none';
 
 export const CheckoutPage = ({ onBack }: CheckoutPageProps) => {
-    const { items, totalPrice, clearCart } = useCart();
+    const { items, clearCart, updateQuantity } = useCart();
 
     const [form, setForm] = useState({
         name: '',
@@ -31,8 +33,16 @@ export const CheckoutPage = ({ onBack }: CheckoutPageProps) => {
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [placed, setPlaced] = useState(false);
     const [loading, setLoading] = useState(false);
-
-    const grandTotal = totalPrice + DELIVERY_FEE;
+    const [couponCode, setCouponCode] = useState('');
+    const [placedTotal, setPlacedTotal] = useState(0);
+    const pricing = computeCartPricing(items);
+    const cartIds = new Set(items.map(item => item.id));
+    const checkoutAddOns = MENU_ITEMS
+        .filter(item =>
+            !cartIds.has(item.id) &&
+            (item.category === 'Dips' || item.category === 'Sides' || item.category === 'Desserts')
+        )
+        .slice(0, 3);
 
     useEffect(() => {
         try {
@@ -78,6 +88,8 @@ export const CheckoutPage = ({ onBack }: CheckoutPageProps) => {
         setLoading(true);
         await new Promise(r => setTimeout(r, 1400));
         setLoading(false);
+        setPlacedTotal(pricing.total);
+        setCouponCode(`SLICE${Math.floor(1000 + Math.random() * 9000)}`);
         setPlaced(true);
         clearCart();
     };
@@ -115,12 +127,21 @@ export const CheckoutPage = ({ onBack }: CheckoutPageProps) => {
                     >
                         <div className="flex justify-between text-sm">
                             <span className="text-brand-dark/50 font-bold uppercase tracking-widest">Total Paid</span>
-                            <span className="font-display text-2xl">Rs. {grandTotal.toLocaleString()}</span>
+                            <span className="font-display text-2xl">Rs. {placedTotal.toLocaleString()}</span>
                         </div>
                         <div className="flex justify-between text-sm">
                             <span className="text-brand-dark/50 font-medium">Payment</span>
                             <span className="font-bold capitalize">{form.paymentMethod === 'cash' ? 'Cash on Delivery' : 'Card on Delivery'}</span>
                         </div>
+                    </motion.div>
+                    <motion.div
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 }}
+                        className="bg-brand-orange/10 border border-brand-orange/20 rounded-2xl p-4 text-left"
+                    >
+                        <p className="text-xs text-brand-dark/60 mb-1">Next Order Reward</p>
+                        <p className="font-bold">Use code <span className="text-brand-orange">{couponCode}</span> for 10% off above Rs. 3,500</p>
                     </motion.div>
 
                     <motion.button
@@ -321,7 +342,12 @@ export const CheckoutPage = ({ onBack }: CheckoutPageProps) => {
                             <div className="p-6 space-y-4 max-h-64 overflow-y-auto">
                                 {items.map(item => (
                                     <div key={item.id} className="flex gap-3 items-center">
-                                        <img src={item.image} alt={item.name} className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
+                                        <img
+                                            src={getProductImageUrl(item.image)}
+                                            alt={item.name}
+                                            className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
+                                            referrerPolicy="no-referrer"
+                                        />
                                         <div className="flex-1 min-w-0">
                                             <p className="font-bold text-sm truncate">{item.name}</p>
                                             <p className="text-xs text-brand-dark/40">× {item.quantity}</p>
@@ -334,18 +360,71 @@ export const CheckoutPage = ({ onBack }: CheckoutPageProps) => {
                             <div className="p-6 border-t border-brand-dark/5 space-y-3">
                                 <div className="flex justify-between text-sm text-brand-dark/60">
                                     <span>Subtotal</span>
-                                    <span>Rs. {totalPrice.toLocaleString()}</span>
+                                    <span>Rs. {pricing.subtotal.toLocaleString()}</span>
                                 </div>
+                                {pricing.discounts.map((discount) => (
+                                    <div key={discount.id} className="flex justify-between text-sm text-green-700">
+                                        <span>{discount.label}</span>
+                                        <span>- Rs. {discount.amount.toLocaleString()}</span>
+                                    </div>
+                                ))}
                                 <div className="flex justify-between text-sm text-brand-dark/60">
                                     <span>Delivery Fee</span>
-                                    <span>Rs. {DELIVERY_FEE}</span>
+                                    <span>{pricing.deliveryFee === 0 ? 'FREE' : `Rs. ${pricing.deliveryFee.toLocaleString()}`}</span>
                                 </div>
                                 <div className="flex justify-between font-display text-xl pt-2 border-t border-brand-dark/5">
                                     <span>Total</span>
-                                    <span>Rs. {grandTotal.toLocaleString()}</span>
+                                    <span>Rs. {pricing.total.toLocaleString()}</span>
                                 </div>
                             </div>
                         </div>
+
+                        <div className="bg-white rounded-3xl shadow-sm p-5 space-y-3">
+                            <div className="text-xs font-bold uppercase tracking-widest text-brand-dark/50">Unlock More Value</div>
+                            <div className="w-full h-2 rounded-full bg-brand-light overflow-hidden">
+                                <div
+                                    className="h-full bg-brand-orange transition-all"
+                                    style={{ width: `${Math.min((pricing.subtotal / FREE_DESSERT_THRESHOLD) * 100, 100)}%` }}
+                                />
+                            </div>
+                            {!pricing.freeDeliveryUnlocked && (
+                                <p className="text-xs text-brand-dark/60">Add Rs. {pricing.missingForFreeDelivery.toLocaleString()} for free delivery (Rs. {FREE_DELIVERY_THRESHOLD.toLocaleString()}).</p>
+                            )}
+                            {!pricing.freeDessertUnlocked && (
+                                <p className="text-xs text-brand-dark/60">Add Rs. {pricing.missingForFreeDessert.toLocaleString()} for free dessert.</p>
+                            )}
+                            {pricing.freeDessertUnlocked && !pricing.freeDessertApplied && (
+                                <p className="text-xs text-brand-dark/70">You unlocked free dessert. Add one below to claim it.</p>
+                            )}
+                        </div>
+
+                        {checkoutAddOns.length > 0 && (
+                            <div className="bg-white rounded-3xl shadow-sm p-5 space-y-3">
+                                <div className="text-xs font-bold uppercase tracking-widest text-brand-dark/50">Last-minute Add-ons</div>
+                                {checkoutAddOns.map(addon => (
+                                    <div key={addon.id} className="flex items-center gap-3">
+                                        <img
+                                            src={getProductImageUrl(addon.image)}
+                                            alt={addon.name}
+                                            className="w-12 h-12 rounded-xl object-cover"
+                                            referrerPolicy="no-referrer"
+                                        />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-bold text-sm truncate">{addon.name}</p>
+                                            <p className="text-xs text-brand-dark/50">Rs. {addon.price.toLocaleString()}</p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => updateQuantity(addon.id, 1, addon)}
+                                            className="bg-brand-light hover:bg-brand-dark hover:text-white transition-colors rounded-xl px-3 py-2 text-xs font-bold flex items-center gap-1"
+                                        >
+                                            <Plus size={14} />
+                                            Add
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
 
                         <motion.button
                             whileTap={{ scale: 0.97 }}
