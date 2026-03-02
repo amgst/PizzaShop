@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
@@ -14,6 +14,12 @@ import { AdminProducts } from './pages/admin/AdminProducts';
 import { AdminOrders } from './pages/admin/AdminOrders';
 import { CartProvider } from './context/CartContext';
 import { SearchProvider } from './context/SearchContext';
+import { CheckoutPage } from './components/CheckoutPage';
+
+const CheckoutRoute: React.FC = () => {
+  const navigate = useNavigate();
+  return <CheckoutPage onBack={() => navigate('/')} />;
+};
 
 export default function App() {
   return (
@@ -24,6 +30,9 @@ export default function App() {
             <Routes>
               {/* Public Storefront */}
               <Route path="/" element={<Storefront />} />
+
+              {/* Checkout */}
+              <Route path="/checkout" element={<CheckoutRoute />} />
 
               {/* Admin Login */}
               <Route path="/admin/login" element={<AdminLogin />} />

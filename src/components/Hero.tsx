@@ -4,7 +4,7 @@ import { ArrowRight, Star } from 'lucide-react';
 
 export const Hero = () => {
   return (
-    <section className="relative min-h-screen pt-32 pb-20 overflow-hidden">
+    <section className="relative min-h-[calc(100vh-88px)] pt-[88px] pb-20 overflow-hidden">
       {/* Background Elements */}
       <div className="absolute top-0 right-0 w-1/2 h-full bg-brand-orange/5 -skew-x-12 transform translate-x-1/4 -z-10" />
       

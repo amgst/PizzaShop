@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
     ArrowLeft, MapPin, Phone, User, Clock, CreditCard,
@@ -34,9 +34,30 @@ export const CheckoutPage = ({ onBack }: CheckoutPageProps) => {
 
     const grandTotal = totalPrice + DELIVERY_FEE;
 
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem('checkout_info');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                setForm(f => ({ ...f, ...parsed }));
+            }
+        } catch { /* ignore */ }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const set = (field: string, value: string) => {
         setForm(f => ({ ...f, [field]: value }));
         setErrors(e => { const { [field]: _, ...rest } = e; return rest; });
+        try {
+            const next = { ...form, [field]: value };
+            localStorage.setItem('checkout_info', JSON.stringify({
+                name: next.name,
+                phone: next.phone,
+                address: next.address,
+                city: next.city,
+                instructions: next.instructions
+            }));
+        } catch { /* ignore */ }
     };
 
     const validate = () => {

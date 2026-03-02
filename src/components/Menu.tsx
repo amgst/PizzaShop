@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MenuItem, MENU_ITEMS } from '../data/menu';
-import { Plus, Minus, Star, Search } from 'lucide-react';
+import { Plus, Minus, Star, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useSearch } from '../context/SearchContext';
 import { ProductModal } from './ProductModal';
@@ -29,6 +29,7 @@ export const Menu = () => {
   const { items, updateQuantity } = useCart();
   const { searchQuery } = useSearch();
   const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
+  const scrollerRef = useRef<HTMLDivElement>(null);
 
   const filteredItems = menuItems.filter(item =>
     item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -105,14 +106,30 @@ export const Menu = () => {
 
       {/* Sticky Category Scroller */}
       <div className="sticky top-[88px] z-30 bg-white/80 backdrop-blur-md border-y border-brand-dark/5 py-4">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex overflow-x-auto no-scrollbar gap-3 pb-1 -mb-1">
+        <div className="max-w-7xl mx-auto px-6 relative">
+          <div
+            ref={scrollerRef}
+            onWheel={(e) => {
+              if (!scrollerRef.current) return;
+              if (scrollerRef.current.scrollWidth <= scrollerRef.current.clientWidth) return;
+              if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                e.preventDefault();
+                scrollerRef.current.scrollBy({ left: e.deltaY, behavior: 'smooth' });
+              }
+            }}
+            className="flex overflow-x-auto no-scrollbar gap-3 pb-1 -mb-1"
+          >
             {categories.filter(cat =>
               !searchQuery || filteredItems.some(item => item.category === cat)
             ).map((cat) => (
               <button
                 key={cat}
-                onClick={() => scrollToSection(cat)}
+                type="button"
+                onClick={() => {
+                  setActiveCategory(cat);
+                  scrollToSection(cat);
+                }}
+                aria-pressed={activeCategory === cat}
                 className={`px-8 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap shrink-0 ${activeCategory === cat
                   ? 'bg-brand-orange text-white shadow-lg shadow-brand-orange/30'
                   : 'bg-brand-dark/5 hover:bg-brand-dark/10 text-brand-dark'
@@ -121,6 +138,28 @@ export const Menu = () => {
                 {cat}
               </button>
             ))}
+          </div>
+          <div className="pointer-events-none absolute inset-y-0 left-0 right-0 flex items-center justify-between">
+            <div className="w-12 h-full bg-gradient-to-r from-white to-transparent" />
+            <div className="w-12 h-full bg-gradient-to-l from-white to-transparent" />
+          </div>
+          <div className="pointer-events-none absolute inset-y-0 left-0 right-0 flex items-center justify-between">
+            <button
+              aria-label="Scroll categories left"
+              onClick={() => scrollerRef.current?.scrollBy({ left: -240, behavior: 'smooth' })}
+              className="pointer-events-auto p-2 rounded-full bg-white shadow-md border border-brand-dark/10 hover:bg-brand-light active:scale-95"
+              style={{ visibility: 'visible' }}
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <button
+              aria-label="Scroll categories right"
+              onClick={() => scrollerRef.current?.scrollBy({ left: 240, behavior: 'smooth' })}
+              className="pointer-events-auto p-2 rounded-full bg-white shadow-md border border-brand-dark/10 hover:bg-brand-light active:scale-95"
+              style={{ visibility: 'visible' }}
+            >
+              <ChevronRight size={18} />
+            </button>
           </div>
         </div>
       </div>

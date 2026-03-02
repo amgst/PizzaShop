@@ -2,9 +2,11 @@ import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, ShoppingBag, Plus, Minus, Trash2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useNavigate } from 'react-router-dom';
 
 export const CartDrawer = () => {
   const { items, totalPrice, totalItems, updateQuantity, removeItem, isCartOpen, setIsCartOpen } = useCart();
+  const navigate = useNavigate();
 
   return (
     <AnimatePresence>
@@ -129,7 +131,13 @@ export const CartDrawer = () => {
                   <span className="text-brand-dark/50 font-bold uppercase tracking-widest text-xs">Subtotal</span>
                   <span className="text-2xl font-display">Rs. {totalPrice.toLocaleString()}</span>
                 </div>
-                <button className="w-full bg-brand-orange text-white py-4 rounded-2xl font-bold text-lg hover:shadow-lg hover:shadow-brand-orange/30 transition-all active:scale-95">
+                <button
+                  onClick={() => {
+                    setIsCartOpen(false);
+                    navigate('/checkout');
+                  }}
+                  className="w-full bg-brand-orange text-white py-4 rounded-2xl font-bold text-lg hover:shadow-lg hover:shadow-brand-orange/30 transition-all active:scale-95"
+                >
                   Checkout Now
                 </button>
                 <p className="text-center text-xs text-brand-dark/40 font-medium">
