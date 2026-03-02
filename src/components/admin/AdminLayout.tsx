@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { LayoutDashboard, Users, ShoppingBag, LogOut, Pizza } from 'lucide-react';
+import { LayoutDashboard, Users, ShoppingBag, LogOut, Pizza, ExternalLink } from 'lucide-react';
 
 export const AdminLayout: React.FC = () => {
     const { logout } = useAuth();
@@ -47,7 +47,16 @@ export const AdminLayout: React.FC = () => {
                     </Link>
                 </nav>
 
-                <div className="p-4 border-t border-gray-200">
+                <div className="p-4 border-t border-gray-200 space-y-2">
+                    <a
+                        href="/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex flex-row items-center justify-center gap-2 w-full py-3 text-brand-dark/70 hover:bg-brand-light hover:text-brand-orange rounded-xl transition-colors font-medium"
+                    >
+                        <ExternalLink size={20} />
+                        View Website
+                    </a>
                     <button
                         onClick={handleLogout}
                         className="flex flex-row items-center justify-center gap-2 w-full py-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors font-medium"
