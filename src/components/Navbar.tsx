@@ -3,8 +3,10 @@ import { ShoppingBag, Menu as MenuIcon, Search, X, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCart } from '../context/CartContext';
 import { useSearch } from '../context/SearchContext';
+import { useNavigate } from 'react-router-dom';
 
 export const Navbar = () => {
+  const navigate = useNavigate();
   const { totalItems, setIsCartOpen, customerUser, logoutCustomer } = useCart();
   const { searchQuery, setSearchQuery, isSearchOpen, setIsSearchOpen } = useSearch();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -155,6 +157,16 @@ export const Navbar = () => {
                             <p className="text-sm font-bold text-brand-dark truncate mb-3">{customerUser.email}</p>
                             <button
                               type="button"
+                              onClick={() => {
+                                navigate('/account');
+                                setIsUserMenuOpen(false);
+                              }}
+                              className="w-full text-left px-3 py-2 rounded-xl hover:bg-brand-light text-sm font-medium"
+                            >
+                              My Account
+                            </button>
+                            <button
+                              type="button"
                               onClick={async () => {
                                 await logoutCustomer();
                                 setIsUserMenuOpen(false);
@@ -260,6 +272,17 @@ export const Navbar = () => {
                   className="w-full text-left px-4 py-3 rounded-xl hover:bg-brand-dark/5 transition-colors"
                 >
                   Sign Up / Login
+                </button>
+              )}
+              {customerUser && (
+                <button
+                  onClick={() => {
+                    navigate('/account');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-3 rounded-xl hover:bg-brand-dark/5 transition-colors"
+                >
+                  My Account
                 </button>
               )}
             </div>

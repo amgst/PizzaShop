@@ -15,6 +15,7 @@ import { AdminOrders } from './pages/admin/AdminOrders';
 import { CartProvider } from './context/CartContext';
 import { SearchProvider } from './context/SearchContext';
 import { CheckoutPage } from './components/CheckoutPage';
+import { AccountPage } from './pages/AccountPage';
 
 const CheckoutRoute: React.FC = () => {
   const navigate = useNavigate();
@@ -33,6 +34,7 @@ export default function App() {
 
               {/* Checkout */}
               <Route path="/checkout" element={<CheckoutRoute />} />
+              <Route path="/account" element={<AccountPage />} />
 
               {/* Admin Login */}
               <Route path="/admin/login" element={<AdminLogin />} />
