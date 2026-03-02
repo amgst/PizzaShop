@@ -47,7 +47,7 @@ export const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4">
-      <div className="max-w-7xl mx-auto flex items-center justify-between glass-card rounded-2xl px-6 py-3 relative overflow-hidden">
+      <div className="max-w-7xl mx-auto flex items-center justify-between glass-card rounded-2xl px-6 py-3 relative overflow-visible">
         <AnimatePresence mode="wait">
           {!isSearchOpen ? (
             <motion.div
@@ -132,10 +132,11 @@ export const Navbar = () => {
                 >
                   Order Now
                 </button>
-                <div className="hidden md:block relative">
+                <div className="hidden md:block relative z-30">
                   {customerUser ? (
                     <>
                       <button
+                        type="button"
                         onClick={() => setIsUserMenuOpen((prev) => !prev)}
                         className="bg-brand-light text-brand-dark px-4 py-2 rounded-xl font-medium hover:bg-brand-dark hover:text-white transition-all flex items-center gap-2"
                       >
@@ -153,6 +154,7 @@ export const Navbar = () => {
                             <p className="text-xs text-brand-dark/50 mb-2">Signed in as</p>
                             <p className="text-sm font-bold text-brand-dark truncate mb-3">{customerUser.email}</p>
                             <button
+                              type="button"
                               onClick={async () => {
                                 await logoutCustomer();
                                 setIsUserMenuOpen(false);
