@@ -4,7 +4,9 @@ import { X, ShoppingBag, Plus, Minus, Trash2, User } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import { getProductImageUrl, handleProductImageError } from '../utils/image';
-import { MENU_ITEMS } from '../data/menu';
+import { MenuItem } from '../data/menu';
+import { getProducts } from '../services/products';
+import { formatCurrency } from '../utils/currency';
 import { computeCartPricing, FREE_DELIVERY_THRESHOLD, FREE_DESSERT_THRESHOLD } from '../utils/pricing';
 
 export const CartDrawer = () => {
@@ -27,19 +29,34 @@ export const CartDrawer = () => {
   const [authMode, setAuthMode] = React.useState<'register' | 'login'>('register');
   const [authError, setAuthError] = React.useState('');
   const [authBusy, setAuthBusy] = React.useState(false);
+  const [products, setProducts] = React.useState<MenuItem[]>([]);
   const pricing = computeCartPricing(items);
   const progressToFreeDessert = Math.min((pricing.subtotal / FREE_DESSERT_THRESHOLD) * 100, 100);
   const cartIds = useMemo(() => new Set(items.map(i => i.id)), [items]);
+
+  React.useEffect(() => {
+    const fetchProductsList = async () => {
+      try {
+        setProducts(await getProducts());
+      } catch (error) {
+        console.error('Failed to fetch cart add-ons:', error);
+        setProducts([]);
+      }
+    };
+
+    fetchProductsList();
+  }, []);
+
   const quickAddOns = useMemo(
     () =>
-      MENU_ITEMS
+      products
         .filter(item =>
           !cartIds.has(item.id) &&
-          (item.category === 'Dips' || item.category === 'Sides' || item.category === 'Desserts')
+          (item.category === 'Sides' || item.category === 'Drinks' || item.category === 'Desserts')
         )
         .sort((a, b) => Number(b.popular || false) - Number(a.popular || false))
         .slice(0, 3),
-    [cartIds]
+    [cartIds, products]
   );
 
   const handleAuthSubmit = async () => {
@@ -142,14 +159,14 @@ export const CartDrawer = () => {
                     </div>
                     {!pricing.freeDeliveryUnlocked ? (
                       <p className="text-xs text-brand-dark/60">
-                        Add Rs. {pricing.missingForFreeDelivery.toLocaleString()} more for free delivery at Rs. {FREE_DELIVERY_THRESHOLD.toLocaleString()}.
+                        Add {formatCurrency(pricing.missingForFreeDelivery)} more for free delivery at {formatCurrency(FREE_DELIVERY_THRESHOLD)}.
                       </p>
                     ) : (
                       <p className="text-xs text-green-700 font-bold">Free delivery unlocked.</p>
                     )}
                     {!pricing.freeDessertUnlocked ? (
                       <p className="text-xs text-brand-dark/60">
-                        Add Rs. {pricing.missingForFreeDessert.toLocaleString()} more to unlock free dessert.
+                        Add {formatCurrency(pricing.missingForFreeDessert)} more to unlock free dessert.
                       </p>
                     ) : pricing.freeDessertApplied ? (
                       <p className="text-xs text-green-700 font-bold">Free dessert applied in your total.</p>
@@ -229,7 +246,7 @@ export const CartDrawer = () => {
                           />
                           <div className="flex-1 min-w-0">
                             <p className="font-bold text-sm truncate">{addon.name}</p>
-                            <p className="text-xs text-brand-dark/50">Rs. {addon.price.toLocaleString()}</p>
+                            <p className="text-xs text-brand-dark/50">{formatCurrency(addon.price)}</p>
                           </div>
                           <button
                             onClick={() => updateQuantity(addon.id, 1, addon)}
@@ -268,7 +285,7 @@ export const CartDrawer = () => {
                           </button>
                         </div>
                         <div className="text-brand-orange font-bold text-sm mb-3">
-                          Rs. {item.price.toLocaleString()}
+                          {formatCurrency(item.price)}
                         </div>
                         
                         <div className="flex items-center justify-between">
@@ -288,7 +305,7 @@ export const CartDrawer = () => {
                             </button>
                           </div>
                           <div className="font-bold">
-                            Rs. {(item.price * item.quantity).toLocaleString()}
+                            {formatCurrency(item.price * item.quantity)}
                           </div>
                         </div>
                         {item.popular && item.quantity === 1 && (
@@ -296,7 +313,7 @@ export const CartDrawer = () => {
                             onClick={() => updateQuantity(item.id, 1, item)}
                             className="mt-2 text-xs font-bold text-brand-orange hover:text-orange-700"
                           >
-                            Make it 2 for Rs. {item.price.toLocaleString()}
+                            Make it 2 for {formatCurrency(item.price)}
                           </button>
                         )}
                       </div>
@@ -311,21 +328,21 @@ export const CartDrawer = () => {
               <div className="p-6 border-t border-brand-dark/5 space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-brand-dark/50 font-bold uppercase tracking-widest text-xs">Subtotal</span>
-                  <span className="text-2xl font-display">Rs. {pricing.subtotal.toLocaleString()}</span>
+                  <span className="text-2xl font-display">{formatCurrency(pricing.subtotal)}</span>
                 </div>
                 {pricing.discounts.map((discount) => (
                   <div key={discount.id} className="flex justify-between items-center text-sm text-green-700">
                     <span>{discount.label}</span>
-                    <span>- Rs. {discount.amount.toLocaleString()}</span>
+                    <span>- {formatCurrency(discount.amount)}</span>
                   </div>
                 ))}
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-brand-dark/50 font-bold uppercase tracking-widest text-xs">Delivery</span>
-                  <span>{pricing.deliveryFee === 0 ? 'FREE' : `Rs. ${pricing.deliveryFee.toLocaleString()}`}</span>
+                  <span>{pricing.deliveryFee === 0 ? 'FREE' : formatCurrency(pricing.deliveryFee)}</span>
                 </div>
                 <div className="flex justify-between items-center border-t border-brand-dark/5 pt-3">
                   <span className="text-brand-dark/50 font-bold uppercase tracking-widest text-xs">Total</span>
-                  <span className="text-2xl font-display">Rs. {pricing.total.toLocaleString()}</span>
+                  <span className="text-2xl font-display">{formatCurrency(pricing.total)}</span>
                 </div>
                 <button
                   onClick={() => {
@@ -334,7 +351,7 @@ export const CartDrawer = () => {
                   }}
                   className="w-full bg-brand-orange text-white py-4 rounded-2xl font-bold text-lg hover:shadow-lg hover:shadow-brand-orange/30 transition-all active:scale-95"
                 >
-                  Checkout Now - Rs. {pricing.total.toLocaleString()}
+                  Checkout Now - {formatCurrency(pricing.total)}
                 </button>
                 <p className="text-center text-xs text-brand-dark/40 font-medium">
                   Offers auto-applied at checkout

@@ -6,7 +6,9 @@ import {
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { getProductImageUrl, handleProductImageError } from '../utils/image';
-import { MENU_ITEMS } from '../data/menu';
+import { MenuItem } from '../data/menu';
+import { getProducts } from '../services/products';
+import { formatCurrency } from '../utils/currency';
 import { computeCartPricing, FREE_DELIVERY_THRESHOLD, FREE_DESSERT_THRESHOLD } from '../utils/pricing';
 
 interface CheckoutPageProps {
@@ -18,6 +20,7 @@ const INPUT_CLASS =
 
 export const CheckoutPage = ({ onBack }: CheckoutPageProps) => {
     const { items, clearCart, updateQuantity } = useCart();
+    const [products, setProducts] = useState<MenuItem[]>([]);
 
     const [form, setForm] = useState({
         name: '',
@@ -37,12 +40,25 @@ export const CheckoutPage = ({ onBack }: CheckoutPageProps) => {
     const [placedTotal, setPlacedTotal] = useState(0);
     const pricing = computeCartPricing(items);
     const cartIds = new Set(items.map(item => item.id));
-    const checkoutAddOns = MENU_ITEMS
+    const checkoutAddOns = products
         .filter(item =>
             !cartIds.has(item.id) &&
-            (item.category === 'Dips' || item.category === 'Sides' || item.category === 'Desserts')
+            (item.category === 'Sides' || item.category === 'Drinks' || item.category === 'Desserts')
         )
         .slice(0, 3);
+
+    useEffect(() => {
+        const fetchProductsList = async () => {
+            try {
+                setProducts(await getProducts());
+            } catch (error) {
+                console.error('Failed to fetch checkout add-ons:', error);
+                setProducts([]);
+            }
+        };
+
+        fetchProductsList();
+    }, []);
 
     useEffect(() => {
         try {
@@ -127,7 +143,7 @@ export const CheckoutPage = ({ onBack }: CheckoutPageProps) => {
                     >
                         <div className="flex justify-between text-sm">
                             <span className="text-brand-dark/50 font-bold uppercase tracking-widest">Total Paid</span>
-                            <span className="font-display text-2xl">Rs. {placedTotal.toLocaleString()}</span>
+                            <span className="font-display text-2xl">{formatCurrency(placedTotal)}</span>
                         </div>
                         <div className="flex justify-between text-sm">
                             <span className="text-brand-dark/50 font-medium">Payment</span>
@@ -141,7 +157,7 @@ export const CheckoutPage = ({ onBack }: CheckoutPageProps) => {
                         className="bg-brand-orange/10 border border-brand-orange/20 rounded-2xl p-4 text-left"
                     >
                         <p className="text-xs text-brand-dark/60 mb-1">Next Order Reward</p>
-                        <p className="font-bold">Use code <span className="text-brand-orange">{couponCode}</span> for 10% off above Rs. 3,500</p>
+                        <p className="font-bold">Use code <span className="text-brand-orange">{couponCode}</span> for 10% off above {formatCurrency(3500)}</p>
                     </motion.div>
 
                     <motion.button
@@ -195,7 +211,7 @@ export const CheckoutPage = ({ onBack }: CheckoutPageProps) => {
                                         <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-dark/30" />
                                         <input
                                             type="text"
-                                            placeholder="Ahmed Khan"
+                                            placeholder="Oliver Smith"
                                             value={form.name}
                                             onChange={e => set('name', e.target.value)}
                                             className={`${INPUT_CLASS} pl-10 ${errors.name ? 'border-red-400' : ''}`}
@@ -209,7 +225,7 @@ export const CheckoutPage = ({ onBack }: CheckoutPageProps) => {
                                         <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-dark/30" />
                                         <input
                                             type="tel"
-                                            placeholder="+1 (212) 555-0147"
+                                            placeholder="+61 412 345 678"
                                             value={form.phone}
                                             onChange={e => set('phone', e.target.value)}
                                             className={`${INPUT_CLASS} pl-10 ${errors.phone ? 'border-red-400' : ''}`}
@@ -224,7 +240,7 @@ export const CheckoutPage = ({ onBack }: CheckoutPageProps) => {
                                 <div className="relative">
                                     <MapPin size={16} className="absolute left-4 top-4 text-brand-dark/30" />
                                     <textarea
-                                        placeholder="1234 Broadway Ave, Apt 5B"
+                                        placeholder="12 George Street, Apartment 5"
                                         rows={2}
                                         value={form.address}
                                         onChange={e => set('address', e.target.value)}
@@ -238,7 +254,7 @@ export const CheckoutPage = ({ onBack }: CheckoutPageProps) => {
                                 <label className="field-label">City</label>
                                 <input
                                     type="text"
-                                    placeholder="New York"
+                                    placeholder="Sydney"
                                     value={form.city}
                                     onChange={e => set('city', e.target.value)}
                                     className={`${INPUT_CLASS} ${errors.city ? 'border-red-400' : ''}`}
@@ -353,7 +369,7 @@ export const CheckoutPage = ({ onBack }: CheckoutPageProps) => {
                                             <p className="font-bold text-sm truncate">{item.name}</p>
                                             <p className="text-xs text-brand-dark/40">× {item.quantity}</p>
                                         </div>
-                                        <p className="font-bold text-sm whitespace-nowrap">Rs. {(item.price * item.quantity).toLocaleString()}</p>
+                                        <p className="font-bold text-sm whitespace-nowrap">{formatCurrency(item.price * item.quantity)}</p>
                                     </div>
                                 ))}
                             </div>
@@ -361,21 +377,21 @@ export const CheckoutPage = ({ onBack }: CheckoutPageProps) => {
                             <div className="p-6 border-t border-brand-dark/5 space-y-3">
                                 <div className="flex justify-between text-sm text-brand-dark/60">
                                     <span>Subtotal</span>
-                                    <span>Rs. {pricing.subtotal.toLocaleString()}</span>
+                                    <span>{formatCurrency(pricing.subtotal)}</span>
                                 </div>
                                 {pricing.discounts.map((discount) => (
                                     <div key={discount.id} className="flex justify-between text-sm text-green-700">
                                         <span>{discount.label}</span>
-                                        <span>- Rs. {discount.amount.toLocaleString()}</span>
+                                        <span>- {formatCurrency(discount.amount)}</span>
                                     </div>
                                 ))}
                                 <div className="flex justify-between text-sm text-brand-dark/60">
                                     <span>Delivery Fee</span>
-                                    <span>{pricing.deliveryFee === 0 ? 'FREE' : `Rs. ${pricing.deliveryFee.toLocaleString()}`}</span>
+                                    <span>{pricing.deliveryFee === 0 ? 'FREE' : formatCurrency(pricing.deliveryFee)}</span>
                                 </div>
                                 <div className="flex justify-between font-display text-xl pt-2 border-t border-brand-dark/5">
                                     <span>Total</span>
-                                    <span>Rs. {pricing.total.toLocaleString()}</span>
+                                    <span>{formatCurrency(pricing.total)}</span>
                                 </div>
                             </div>
                         </div>
@@ -389,10 +405,10 @@ export const CheckoutPage = ({ onBack }: CheckoutPageProps) => {
                                 />
                             </div>
                             {!pricing.freeDeliveryUnlocked && (
-                                <p className="text-xs text-brand-dark/60">Add Rs. {pricing.missingForFreeDelivery.toLocaleString()} for free delivery (Rs. {FREE_DELIVERY_THRESHOLD.toLocaleString()}).</p>
+                                <p className="text-xs text-brand-dark/60">Add {formatCurrency(pricing.missingForFreeDelivery)} for free delivery ({formatCurrency(FREE_DELIVERY_THRESHOLD)}).</p>
                             )}
                             {!pricing.freeDessertUnlocked && (
-                                <p className="text-xs text-brand-dark/60">Add Rs. {pricing.missingForFreeDessert.toLocaleString()} for free dessert.</p>
+                                <p className="text-xs text-brand-dark/60">Add {formatCurrency(pricing.missingForFreeDessert)} for free dessert.</p>
                             )}
                             {pricing.freeDessertUnlocked && !pricing.freeDessertApplied && (
                                 <p className="text-xs text-brand-dark/70">You unlocked free dessert. Add one below to claim it.</p>
@@ -413,7 +429,7 @@ export const CheckoutPage = ({ onBack }: CheckoutPageProps) => {
                                         />
                                         <div className="flex-1 min-w-0">
                                             <p className="font-bold text-sm truncate">{addon.name}</p>
-                                            <p className="text-xs text-brand-dark/50">Rs. {addon.price.toLocaleString()}</p>
+                                            <p className="text-xs text-brand-dark/50">{formatCurrency(addon.price)}</p>
                                         </div>
                                         <button
                                             type="button"

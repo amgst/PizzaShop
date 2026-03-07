@@ -41,12 +41,18 @@ export const AdminProducts: React.FC = () => {
     };
 
     const handleSave = async (productData: Omit<MenuItem, 'id'>) => {
-        if (editingProduct) {
-            await updateProduct(editingProduct.id, productData);
-        } else {
-            await addProduct(productData);
+        try {
+            if (editingProduct) {
+                await updateProduct(editingProduct.id, productData);
+            } else {
+                await addProduct(productData);
+            }
+            await fetchProducts();
+        } catch (error) {
+            console.error("Failed to save product:", error);
+            alert("Failed to save product");
+            throw error;
         }
-        await fetchProducts();
     };
 
     const handleSeedData = async () => {

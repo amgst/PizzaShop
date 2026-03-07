@@ -9,10 +9,12 @@ export const BUNDLE_DISCOUNT = 350;
 export const WINGS_SECOND_DISCOUNT_RATE = 0.2;
 
 const PIZZA_CATEGORIES = new Set<MenuItem['category']>([
-  'Signature Pizzas',
-  'Gourmet White Pies',
-  'Spicy & Bold',
-  'Plant-Based'
+  'Classic Pizzas',
+  'Chicken Pizzas',
+  'Beef Pizzas',
+  'Pakistani Flavor Pizzas',
+  'Special / House Special',
+  'Veggie Pizzas'
 ]);
 
 export interface DiscountLine {
@@ -41,34 +43,22 @@ export const computeCartPricing = (items: PricedItem[]): PricingBreakdown => {
 
   let pizzaQty = 0;
   let sideQty = 0;
-  let dipQty = 0;
-  let wingsDiscount = 0;
+  let drinkQty = 0;
   let cheapestDessertPrice = Number.POSITIVE_INFINITY;
 
   items.forEach((item) => {
     if (PIZZA_CATEGORIES.has(item.category)) pizzaQty += item.quantity;
     if (item.category === 'Sides') sideQty += item.quantity;
-    if (item.category === 'Dips') dipQty += item.quantity;
-    if (item.category === 'Wings') {
-      wingsDiscount += Math.floor(item.quantity / 2) * item.price * WINGS_SECOND_DISCOUNT_RATE;
-    }
+    if (item.category === 'Drinks') drinkQty += item.quantity;
     if (item.category === 'Desserts') cheapestDessertPrice = Math.min(cheapestDessertPrice, item.price);
   });
 
-  const bundleCount = Math.min(Math.floor(pizzaQty / 2), sideQty, dipQty);
+  const bundleCount = Math.min(Math.floor(pizzaQty / 2), sideQty, drinkQty);
   if (bundleCount > 0) {
     discounts.push({
       id: 'bundle',
       label: `Pizza Party Bundle x${bundleCount}`,
       amount: bundleCount * BUNDLE_DISCOUNT
-    });
-  }
-
-  if (wingsDiscount > 0) {
-    discounts.push({
-      id: 'wings',
-      label: 'Wings Pair Offer',
-      amount: Math.round(wingsDiscount)
     });
   }
 

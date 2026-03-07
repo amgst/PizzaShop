@@ -1,16 +1,18 @@
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Plus, Minus, Star, Clock, Flame, Info } from 'lucide-react';
-import { MenuItem, MENU_ITEMS } from '../data/menu';
+import { X, Plus, Minus, Clock, Flame } from 'lucide-react';
+import { MenuItem } from '../data/menu';
 import { useCart } from '../context/CartContext';
+import { formatCurrency } from '../utils/currency';
 import { getProductImageUrl, handleProductImageError } from '../utils/image';
 
 interface ProductModalProps {
   product: MenuItem | null;
+  products: MenuItem[];
   onClose: () => void;
 }
 
-export const ProductModal = ({ product, onClose }: ProductModalProps) => {
+export const ProductModal = ({ product, products, onClose }: ProductModalProps) => {
   const { items, updateQuantity, setIsCartOpen } = useCart();
 
   if (!product) return null;
@@ -18,24 +20,24 @@ export const ProductModal = ({ product, onClose }: ProductModalProps) => {
   const quantity = items.find(item => item.id === product.id)?.quantity || 0;
   const cartIds = new Set(items.map(item => item.id));
   const relatedCategories: Record<MenuItem['category'], MenuItem['category'][]> = {
-    'Signature Pizzas': ['Dips', 'Sides', 'Desserts'],
-    'Gourmet White Pies': ['Dips', 'Sides', 'Desserts'],
-    'Spicy & Bold': ['Dips', 'Wings', 'Desserts'],
-    'Plant-Based': ['Dips', 'Salads', 'Desserts'],
-    'Calzones': ['Dips', 'Sides', 'Desserts'],
-    'Wings': ['Dips', 'Sides', 'Desserts'],
-    'Salads': ['Sides', 'Dips', 'Desserts'],
-    'Sides': ['Dips', 'Desserts', 'Wings'],
-    'Dips': ['Sides', 'Wings', 'Desserts'],
-    'Desserts': ['Signature Pizzas', 'Dips', 'Sides']
+    'Classic Pizzas': ['Sides', 'Drinks', 'Desserts'],
+    'Chicken Pizzas': ['Sides', 'Drinks', 'Desserts'],
+    'Beef Pizzas': ['Sides', 'Drinks', 'Desserts'],
+    'Pakistani Flavor Pizzas': ['Sides', 'Drinks', 'Desserts'],
+    'Special / House Special': ['Sides', 'Drinks', 'Desserts'],
+    'Veggie Pizzas': ['Sides', 'Drinks', 'Desserts'],
+    'Deals / Combos': ['Sides', 'Drinks', 'Desserts'],
+    'Sides': ['Drinks', 'Desserts', 'Classic Pizzas'],
+    'Drinks': ['Sides', 'Desserts', 'Classic Pizzas'],
+    'Desserts': ['Classic Pizzas', 'Sides', 'Drinks']
   };
   const frequentPairings = useMemo(() => {
     const targetCategories = new Set(relatedCategories[product.category]);
-    return MENU_ITEMS
+    return products
       .filter(item => item.id !== product.id && targetCategories.has(item.category) && !cartIds.has(item.id))
       .sort((a, b) => Number(b.popular || false) - Number(a.popular || false))
       .slice(0, 3);
-  }, [cartIds, product.category, product.id]);
+  }, [cartIds, product.category, product.id, products]);
 
   return (
     <AnimatePresence>
@@ -64,12 +66,6 @@ export const ProductModal = ({ product, onClose }: ProductModalProps) => {
                 referrerPolicy="no-referrer"
                 onError={handleProductImageError}
               />
-              {product.popular && (
-                <div className="absolute top-6 left-6 bg-brand-yellow text-brand-dark px-4 py-1.5 rounded-full text-xs font-black flex items-center gap-1.5 shadow-lg">
-                  <Star size={14} fill="currentColor" />
-                  POPULAR CHOICE
-                </div>
-              )}
               <button
                 onClick={onClose}
                 className="absolute top-6 right-6 p-2 bg-white/20 backdrop-blur-md hover:bg-white/40 text-white rounded-full transition-colors md:hidden"
@@ -90,9 +86,6 @@ export const ProductModal = ({ product, onClose }: ProductModalProps) => {
               </div>
 
               <div className="flex-1">
-                <div className="text-xs font-bold text-brand-orange uppercase tracking-widest mb-2">
-                  {product.category}
-                </div>
                 <h2 className="text-4xl font-display mb-4 leading-tight">{product.name}</h2>
 
                 <div className="flex items-center gap-6 mb-8">
@@ -105,35 +98,13 @@ export const ProductModal = ({ product, onClose }: ProductModalProps) => {
                     <span className="text-sm font-bold">450 kcal</span>
                   </div>
                   <div className="flex items-center gap-2 text-brand-dark/50">
-                    <Star size={18} className="text-brand-yellow fill-brand-yellow" />
-                    <span className="text-sm font-bold">4.8 (120+)</span>
+                    <span className="text-sm font-bold">Freshly baked</span>
                   </div>
                 </div>
 
                 <p className="text-lg text-brand-dark/70 mb-8 leading-relaxed">
                   {product.description}
                 </p>
-
-                <div className="bg-brand-light p-6 rounded-3xl mb-8">
-                  <div className="flex items-center gap-3 mb-4 text-brand-dark/40">
-                    <Info size={18} />
-                    <span className="text-xs font-bold uppercase tracking-widest">Key Ingredients & Highlights</span>
-                  </div>
-                  {product.ingredients ? (
-                    <ul className="grid grid-cols-2 gap-y-2 gap-x-4">
-                      {product.ingredients.map((ingredient, idx) => (
-                        <li key={idx} className="flex items-center gap-2 text-sm text-brand-dark/70">
-                          <div className="w-1.5 h-1.5 rounded-full bg-brand-orange" />
-                          {ingredient}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-sm text-brand-dark/60">
-                      Premium mozzarella, fresh dough, secret sauce, and locally sourced toppings. Hand-crafted with love.
-                    </p>
-                  )}
-                </div>
 
                 {frequentPairings.length > 0 && (
                   <div className="mb-8">
@@ -150,7 +121,7 @@ export const ProductModal = ({ product, onClose }: ProductModalProps) => {
                           />
                           <div className="flex-1 min-w-0">
                             <p className="font-bold text-sm truncate">{item.name}</p>
-                            <p className="text-xs text-brand-dark/50">Rs. {item.price.toLocaleString()}</p>
+                            <p className="text-xs text-brand-dark/50">{formatCurrency(item.price)}</p>
                           </div>
                           <button
                             onClick={() => {
@@ -172,7 +143,7 @@ export const ProductModal = ({ product, onClose }: ProductModalProps) => {
                 <div>
                   <div className="text-xs font-bold text-brand-dark/40 uppercase tracking-widest mb-1">Total Price</div>
                   <div className="text-3xl font-display text-brand-orange">
-                    Rs. {(product.price * (quantity || 1)).toLocaleString()}
+                    {formatCurrency(product.price * (quantity || 1))}
                   </div>
                 </div>
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { MenuItem } from '../../data/menu';
+import { MenuItem, MENU_CATEGORIES } from '../../data/menu';
 
 interface ProductFormModalProps {
     isOpen: boolean;
@@ -13,7 +13,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onCl
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [price, setPrice] = useState('');
-    const [category, setCategory] = useState<MenuItem['category']>('Signature Pizzas');
+    const [category, setCategory] = useState<MenuItem['category']>(MENU_CATEGORIES[0]);
     const [image, setImage] = useState('');
     const [popular, setPopular] = useState(false);
     const [ingredients, setIngredients] = useState('');
@@ -33,7 +33,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onCl
             setName('');
             setDescription('');
             setPrice('');
-            setCategory('Signature Pizzas');
+            setCategory(MENU_CATEGORIES[0]);
             setImage('');
             setPopular(false);
             setIngredients('');
@@ -127,16 +127,9 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onCl
                                 onChange={e => setCategory(e.target.value as MenuItem['category'])}
                                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all font-medium bg-white"
                             >
-                                <option value="Signature Pizzas">Signature Pizzas</option>
-                                <option value="Gourmet White Pies">Gourmet White Pies</option>
-                                <option value="Spicy & Bold">Spicy & Bold</option>
-                                <option value="Plant-Based">Plant-Based</option>
-                                <option value="Calzones">Calzones</option>
-                                <option value="Wings">Wings</option>
-                                <option value="Salads">Salads</option>
-                                <option value="Sides">Sides</option>
-                                <option value="Dips">Dips</option>
-                                <option value="Desserts">Desserts</option>
+                                {MENU_CATEGORIES.map((menuCategory) => (
+                                    <option key={menuCategory} value={menuCategory}>{menuCategory}</option>
+                                ))}
                             </select>
                         </div>
 

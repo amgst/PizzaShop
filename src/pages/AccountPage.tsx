@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mail, User, ShoppingBag, LogOut, MapPin, Phone } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { formatCurrency } from '../utils/currency';
 
 type SavedCheckoutInfo = {
   name?: string;
@@ -87,7 +88,7 @@ export const AccountPage: React.FC = () => {
               <ShoppingBag size={18} className="text-brand-orange" />
               <span>{totalItems} {totalItems === 1 ? 'item' : 'items'} in cart</span>
             </div>
-            <div className="text-3xl font-display text-brand-orange">Rs. {totalPrice.toLocaleString()}</div>
+            <div className="text-3xl font-display text-brand-orange">{formatCurrency(totalPrice)}</div>
             <button
               onClick={() => navigate('/')}
               className="bg-brand-light px-4 py-2 rounded-xl font-medium hover:bg-brand-dark hover:text-white transition-colors"

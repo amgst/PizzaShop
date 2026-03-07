@@ -1,26 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MenuItem, MENU_ITEMS } from '../data/menu';
-import { Plus, Minus, Star, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MenuItem, MENU_CATEGORIES } from '../data/menu';
+import { Plus, Minus, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useSearch } from '../context/SearchContext';
 import { ProductModal } from './ProductModal';
 import { getProducts } from '../services/products';
 import { getProductImageUrl } from '../utils/image';
+import { formatCurrency } from '../utils/currency';
 import { BUNDLE_DISCOUNT, FREE_DELIVERY_THRESHOLD, FREE_DESSERT_THRESHOLD } from '../utils/pricing';
 
-const categories = [
-  'Signature Pizzas',
-  'Gourmet White Pies',
-  'Spicy & Bold',
-  'Plant-Based',
-  'Calzones',
-  'Wings',
-  'Salads',
-  'Sides',
-  'Dips',
-  'Desserts'
-];
+const categories = [...MENU_CATEGORIES];
 
 export const Menu = () => {
   const [activeCategory, setActiveCategory] = useState(categories[0]);
@@ -56,13 +46,10 @@ export const Menu = () => {
     const fetchItems = async () => {
       try {
         const data = await getProducts();
-        // Merge DB items with static items to ensure full menu shows even if DB is partially seeded
-        const existingNames = new Set(data.map(d => d.name.trim().toLowerCase()));
-        const extras = MENU_ITEMS.filter(i => !existingNames.has(i.name.trim().toLowerCase()));
-        setMenuItems([...data, ...extras]);
+        setMenuItems(data);
       } catch (error) {
         console.error("Failed to fetch menu:", error);
-        setMenuItems(MENU_ITEMS);
+        setMenuItems([]);
       } finally {
         setLoading(false);
       }
@@ -170,14 +157,14 @@ export const Menu = () => {
         <div className="bg-brand-dark text-white rounded-3xl p-6 md:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-widest text-white/60 font-bold mb-2">Value Deals</p>
-            <h3 className="font-display text-2xl">Pizza Party Bundle: 2 Pizzas + 1 Side + 1 Dip</h3>
-            <p className="text-white/70 text-sm">Auto-save Rs. {BUNDLE_DISCOUNT} in cart. Free delivery over Rs. {FREE_DELIVERY_THRESHOLD.toLocaleString()} and free dessert unlock at Rs. {FREE_DESSERT_THRESHOLD.toLocaleString()}.</p>
+            <h3 className="font-display text-2xl">Pizza Party Bundle: 2 Pizzas + 1 Side + 1 Drink</h3>
+            <p className="text-white/70 text-sm">Auto-save {formatCurrency(BUNDLE_DISCOUNT)} in cart. Free delivery over {formatCurrency(FREE_DELIVERY_THRESHOLD)} and free dessert unlock at {formatCurrency(FREE_DESSERT_THRESHOLD)}.</p>
           </div>
           <button
             type="button"
             onClick={() => {
-              setActiveCategory('Signature Pizzas');
-              scrollToSection('Signature Pizzas');
+              setActiveCategory('Classic Pizzas');
+              scrollToSection('Classic Pizzas');
             }}
             className="bg-brand-orange px-6 py-3 rounded-2xl font-bold hover:shadow-lg hover:shadow-brand-orange/30 transition-all"
           >
@@ -226,12 +213,6 @@ export const Menu = () => {
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                             referrerPolicy="no-referrer"
                           />
-                          {item.popular && (
-                            <div className="absolute top-4 left-4 bg-brand-yellow text-brand-dark px-3 py-1 rounded-full text-xs font-black flex items-center gap-1">
-                              <Star size={12} fill="currentColor" />
-                              POPULAR
-                            </div>
-                          )}
                           <motion.div
                             key={`${item.id}-${quantity}`}
                             initial={{ scale: 1.1, color: '#F27D26' }}
@@ -243,7 +224,7 @@ export const Menu = () => {
                                 {quantity}x
                               </span>
                             )}
-                            <span>Rs. {(item.price * (quantity || 1)).toLocaleString()}</span>
+                            <span>{formatCurrency(item.price * (quantity || 1))}</span>
                           </motion.div>
                         </div>
 
@@ -324,6 +305,7 @@ export const Menu = () => {
 
       <ProductModal
         product={selectedProduct}
+        products={menuItems}
         onClose={() => setSelectedProduct(null)}
       />
     </section>
