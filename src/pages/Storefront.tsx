@@ -1,4 +1,5 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Navbar } from '../components/Navbar';
 import { Hero } from '../components/Hero';
 import { Menu } from '../components/Menu';
@@ -8,6 +9,37 @@ import { CartDrawer } from '../components/CartDrawer';
 export default function App() {
   return (
     <div className="min-h-screen selection:bg-brand-orange selection:text-white">
+      <Helmet>
+        <title>Pizza Shop - Authentic Pizza and Italian Cuisine</title>
+        <meta name="description" content="Order delicious pizza, burgers, and pasta from Pizza Shop. Fresh ingredients, fast delivery, and authentic Italian flavors since 2014." />
+        <meta name="keywords" content="pizza, italian food, delivery, restaurant, burgers, pasta" />
+        <meta property="og:title" content="Pizza Shop - Authentic Pizza and Italian Cuisine" />
+        <meta property="og:description" content="Order delicious pizza, burgers, and pasta from Pizza Shop. Fresh ingredients, fast delivery, and authentic Italian flavors since 2014." />
+        <meta property="og:image" content="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1000&q=80" />
+        <meta property="og:url" content="https://yourwebsite.com" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Restaurant",
+            "name": "Pizza Shop",
+            "description": "Authentic pizza and Italian cuisine since 2014",
+            "url": "https://yourwebsite.com",
+            "telephone": "+1-555-123-4567",
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "123 Main St",
+              "addressLocality": "Anytown",
+              "addressRegion": "CA",
+              "postalCode": "12345",
+              "addressCountry": "US"
+            },
+            "servesCuisine": ["Italian", "Pizza"],
+            "priceRange": "$$",
+            "image": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1000&q=80"
+          })}
+        </script>
+      </Helmet>
       <Navbar />
       <CartDrawer />
       <main>
