@@ -16,7 +16,7 @@ export default function App() {
         <meta property="og:title" content="Pizza Shop - Authentic Pizza and Italian Cuisine" />
         <meta property="og:description" content="Order delicious pizza, burgers, and pasta from Pizza Shop. Fresh ingredients, fast delivery, and authentic Italian flavors since 2014." />
         <meta property="og:image" content="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1000&q=80" />
-        <meta property="og:url" content="https://yourwebsite.com" />
+        <meta property="og:url" content="https://pizza.wbify.com" />
         <meta name="twitter:card" content="summary_large_image" />
         <script type="application/ld+json">
           {JSON.stringify({
@@ -24,7 +24,7 @@ export default function App() {
             "@type": "Restaurant",
             "name": "Pizza Shop",
             "description": "Authentic pizza and Italian cuisine since 2014",
-            "url": "https://yourwebsite.com",
+            "url": "https://pizza.wbify.com",
             "telephone": "+1-555-123-4567",
             "address": {
               "@type": "PostalAddress",
